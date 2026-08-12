@@ -1,0 +1,177 @@
+package com.schoolsystem;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
+
+public class ClassRecord extends JFrame {
+
+    private static final long serialVersionUID = 1L;
+
+    private JPanel contentPane;
+    private JTable table;
+
+    public ClassRecord() {
+
+        setTitle("School Management System - Class Record");
+        setMinimumSize(new Dimension(1000, 600));
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setBounds(100, 100, 1000, 600);
+
+        contentPane = new JPanel();
+        contentPane.setBackground(Color.WHITE);
+        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+        setContentPane(contentPane);
+        contentPane.setLayout(null);
+
+        // =========================
+        // HEADER
+        // =========================
+
+        JPanel headerPanel = new JPanel();
+        headerPanel.setBackground(new Color(0, 102, 204));
+        headerPanel.setBounds(0, 0, 984, 80);
+        headerPanel.setLayout(null);
+        contentPane.add(headerPanel);
+
+        JLabel lblTitle = new JLabel("School Management System");
+        lblTitle.setForeground(Color.WHITE);
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        lblTitle.setBounds(30, 15, 400, 35);
+        headerPanel.add(lblTitle);
+
+        JLabel lblTeacher = new JLabel("TEACHER");
+        lblTeacher.setForeground(Color.WHITE);
+        lblTeacher.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblTeacher.setHorizontalAlignment(SwingConstants.RIGHT);
+        lblTeacher.setBounds(700, 25, 240, 25);
+        headerPanel.add(lblTeacher);
+
+        // =========================
+        // PAGE TITLE
+        // =========================
+
+        JLabel lblPageTitle = new JLabel("Class Record");
+        lblPageTitle.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        lblPageTitle.setBounds(40, 105, 300, 40);
+        contentPane.add(lblPageTitle);
+
+        JLabel lblDescription = new JLabel(
+                "View and manage the class record."
+        );
+        lblDescription.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        lblDescription.setBounds(40, 145, 500, 25);
+        contentPane.add(lblDescription);
+
+        // =========================
+        // SECTION
+        // =========================
+
+        JLabel lblSection = new JLabel("Section:");
+        lblSection.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblSection.setBounds(40, 190, 80, 30);
+        contentPane.add(lblSection);
+
+        JComboBox<String> comboSection = new JComboBox<>();
+        comboSection.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        comboSection.setBounds(110, 190, 200, 30);
+
+        comboSection.addItem("Select Section");
+        comboSection.addItem("ICT 12-A");
+        comboSection.addItem("STEM 12-A");
+        comboSection.addItem("ABM 12-A");
+        comboSection.addItem("HUMSS 12-A");
+
+        contentPane.add(comboSection);
+
+        // =========================
+        // SUBJECT
+        // =========================
+
+        JLabel lblSubject = new JLabel("Subject:");
+        lblSubject.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblSubject.setBounds(340, 190, 80, 30);
+        contentPane.add(lblSubject);
+
+        JComboBox<String> comboSubject = new JComboBox<>();
+        comboSubject.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        comboSubject.setBounds(410, 190, 200, 30);
+
+        comboSubject.addItem("Select Subject");
+        comboSubject.addItem("Mathematics");
+        comboSubject.addItem("English");
+        comboSubject.addItem("Science");
+        comboSubject.addItem("Programming");
+
+        contentPane.add(comboSubject);
+
+        // =========================
+        // VIEW BUTTON
+        // =========================
+
+        JButton btnView = new JButton("View Record");
+        btnView.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnView.setBounds(630, 190, 130, 30);
+        contentPane.add(btnView);
+
+        // =========================
+        // TABLE
+        // =========================
+
+        String[] columns = {
+                "Student ID",
+                "Student Name",
+                "Quarter 1",
+                "Quarter 2",
+                "Quarter 3",
+                "Quarter 4",
+                "Final Grade"
+        };
+
+        DefaultTableModel model = new DefaultTableModel(columns, 0);
+
+        table = new JTable(model);
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        table.setRowHeight(28);
+
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setBounds(40, 250, 900, 220);
+        contentPane.add(scrollPane);
+
+        // =========================
+        // BUTTONS
+        // =========================
+
+        JButton btnEdit = new JButton("Edit Grade");
+        btnEdit.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnEdit.setBounds(40, 490, 130, 35);
+        contentPane.add(btnEdit);
+
+        JButton btnSave = new JButton("Save Record");
+        btnSave.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnSave.setBounds(185, 490, 140, 35);
+        contentPane.add(btnSave);
+
+        JButton btnBack = new JButton("Back");
+        btnBack.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnBack.setBounds(810, 490, 130, 35);
+        contentPane.add(btnBack);
+
+        // =========================
+        // BACK BUTTON
+        // =========================
+
+        btnBack.addActionListener(e -> dispose());
+    }
+}
