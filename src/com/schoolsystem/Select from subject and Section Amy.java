@@ -1,0 +1,5 @@
+USE school_management_system;
+
+SELECT * FROM sections;
+
+SELECT * FROM subjects;
