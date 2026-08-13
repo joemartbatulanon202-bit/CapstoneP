@@ -1,0 +1,4 @@
+USE school_management_system;
+
+INSERT INTO subjects (subject_code, subject_name)
+VALUES ('CH', 'Computer Hardware');
