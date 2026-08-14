@@ -1,0 +1,657 @@
+public class Main {
+	public static void main(String[] args) {
+		/*
+Windows
+  ↓
+MySQL Workbench
+  ↓
+Local MySQL connection
+  ↓
+SQL Editor
+  ↓
+school_management_system
+  ↓
+Create tables		
+   
+   		Lets start the Procedure 
+   		
+  Okay 👍 We'll do Steps 1–4, slowly.
+
+Step 1
+
+Press the Windows key.
+
+Step 2
+
+Type:
+
+MySQL Workbench
+
+Step 3
+
+Click MySQL Workbench from the search results.
+
+Step 4
+
+Wait for MySQL Workbench to open.
+
+You should see your MySQL connection, usually something like:
+
+Local instance MySQL
+
+👉 Stop at Step 4. Tell me when MySQL Workbench is open, and I'll give you Steps 5–8.
+
+Steps 5–8 👍
+
+Step 5: On the MySQL Workbench home screen, find your Local instance MySQL connection.
+
+Step 6: Double-click the connection.
+
+Step 7: Enter your MySQL root password if it asks.
+
+Step 8: Wait until the SQL Editor opens. You should see a screen with a large area where you can type SQL.
+
+👉 Stop here. Once you see the SQL Editor, tell me Next.
+
+Steps 9–12 👍
+
+Step 9: Look at the left side of MySQL Workbench.
+
+Find SCHEMAS.
+
+Step 10: Look for:
+
+school_management_system
+
+Step 11: If you see it, click the small ▶ arrow beside it to expand the database.
+
+Step 12: You should see folders such as:
+
+Tables
+Views
+Stored Procedures
+Functions
+
+👉 Stop at Step 12. Tell me what you see under Tables.
+
+Steps 13–16 👍
+
+Step 13: Click the small ▶ arrow beside Tables.
+
+Step 14: Look at the list of tables.
+
+If you haven't created any tables yet, it may be empty.
+
+Step 15: Now click the SQL Editor area (the large white/gray area in the middle).
+
+Step 16: Type only this:
+
+USE school_management_system;
+
+⚠️ Don't execute it yet.
+
+👉 Stop here and tell me “typed”. Then I'll give you Steps 17–20.
+
+
+Step 17 — Select your database 👍
+
+In the SQL Editor, type:
+
+USE school_management_system;
+
+Don't create the table yet.
+
+Step 18
+
+Click the ⚡ Execute button at the top.
+
+Step 19
+
+Look at the Output panel at the bottom.
+
+You should not see a red error.
+
+Step 20
+
+Now we are ready for the first table: users.
+
+👉 Stop here. Tell me “done” after USE school_management_system; executes successfully.
+
+Step 21 — Create the users table 👍
+
+Now, in the SQL Editor, type:
+
+CREATE TABLE users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL
+);
+
+Step 22 — Execute
+
+Click the ⚡ Execute button.
+
+Step 23 — Check the result
+
+If there is no red error, the users table was created successfully.
+
+Step 24 — Check the table
+
+Type:
+
+SHOW TABLES;
+
+Then click ⚡ Execute.
+
+You should see:
+
+users
+
+👉 Stop here. If you see users, tell me Next and we'll create the students table.
+
+
+Step 25 — Create the students table 👍
+
+In the SQL Editor, type:
+
+CREATE TABLE students (
+    student_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_number VARCHAR(20) NOT NULL UNIQUE,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    school_level VARCHAR(30) NOT NULL,
+    strand VARCHAR(50),
+    section VARCHAR(50)
+);
+
+Step 26 — Execute
+
+Click the ⚡ Execute button.
+
+Step 27 — Check it
+
+Run:
+
+SHOW TABLES;
+
+You should now see:
+
+students
+users
+
+Step 28
+
+If both appear without a red error, stop there.
+
+Tell me Next and we'll create Table 3 — teachers.
+
+
+
+Step 29 — Create the teachers table 👍
+
+In the SQL Editor, type:
+
+CREATE TABLE teachers (
+    teacher_id INT AUTO_INCREMENT PRIMARY KEY,
+    teacher_number VARCHAR(20) NOT NULL UNIQUE,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    department VARCHAR(100),
+    specialization VARCHAR(100)
+);
+
+Step 30 — Execute
+
+Click the ⚡ Execute button.
+
+Step 31 — Check
+
+Run:
+
+SHOW TABLES;
+
+You should now have:
+
+users
+students
+teachers
+
+Step 32
+
+If there is no red error, stop here.
+
+Tell me Next → then we'll create Table 4 — subjects.
+
+
+Yes 👍 Continuing from Step 33.
+
+Step 33 — Create subjects
+
+In the SQL Editor, type:
+
+CREATE TABLE subjects (
+    subject_id INT AUTO_INCREMENT PRIMARY KEY,
+    subject_code VARCHAR(20) NOT NULL UNIQUE,
+    subject_name VARCHAR(100) NOT NULL,
+    description VARCHAR(255),
+    school_level VARCHAR(30) NOT NULL
+);
+
+Step 34 — Execute
+
+Click the ⚡ Execute button.
+
+Step 35 — Check the tables
+
+Run:
+
+SHOW TABLES;
+
+You should now have:
+
+users
+students
+teachers
+subjects
+
+Step 36
+
+If there is no red error, stop here.
+
+Tell me Next → we'll continue with **Table 5: `sections`**.
+
+Step 37 — Create sections
+
+This table stores your class sections, such as ICT 12-A, STEM 12-A, ABM 12-A, etc.
+
+Type:
+
+CREATE TABLE sections (
+    section_id INT AUTO_INCREMENT PRIMARY KEY,
+    section_name VARCHAR(50) NOT NULL,
+    school_level VARCHAR(30) NOT NULL,
+    strand VARCHAR(50),
+    grade_level VARCHAR(20)
+);
+
+Step 38 — Execute
+
+Click the ⚡ Execute button.
+
+Step 39 — Check
+
+Run:
+
+SHOW TABLES;
+
+You should now have:
+
+users
+students
+teachers
+subjects
+sections
+
+Step 40
+
+If there is no red error, stop here.
+
+Tell me Next → Table 6: enrollments.
+
+Step 41 — Create enrollments
+
+This table connects students to their section/class.
+
+Type:
+
+CREATE TABLE enrollments (
+    enrollment_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    section_id INT NOT NULL,
+    school_year VARCHAR(20) NOT NULL,
+    enrollment_date DATE,
+    
+    FOREIGN KEY (student_id)
+        REFERENCES students(student_id),
+
+    FOREIGN KEY (section_id)
+        REFERENCES sections(section_id)
+);
+
+Step 42 — Execute
+
+Click the ⚡ Execute button.
+
+Step 43 — Check
+
+Run:
+
+SHOW TABLES;
+
+You should now have:
+
+users
+students
+teachers
+subjects
+sections
+enrollments
+
+Step 44
+
+If there is no red error, stop here.
+
+Tell me Next → we'll create Table 7: assessments, which will handle your Quiz, Summative Assessment, and Performance Task.
+
+
+Step 45 — Create assessments
+
+This table stores the three assessment types you wanted students to see:
+
+Quiz
+
+Summative Assessment
+
+Performance Task
+
+
+Type:
+
+CREATE TABLE assessments (
+    assessment_id INT AUTO_INCREMENT PRIMARY KEY,
+    subject_id INT NOT NULL,
+    teacher_id INT NOT NULL,
+    assessment_name VARCHAR(100) NOT NULL,
+    assessment_type VARCHAR(30) NOT NULL,
+    total_score DECIMAL(10,2) NOT NULL,
+
+    FOREIGN KEY (subject_id)
+        REFERENCES subjects(subject_id),
+
+    FOREIGN KEY (teacher_id)
+        REFERENCES teachers(teacher_id)
+);
+
+Step 46 — Execute
+
+Click the ⚡ Execute button.
+
+Step 47 — Check
+
+Run:
+
+SHOW TABLES;
+
+You should now have:
+
+users
+students
+teachers
+subjects
+sections
+enrollments
+assessments
+
+Step 48
+
+If there is no red error, stop here.
+
+Tell me Next → Table 8: grades.
+
+
+Step 49 — Create grades
+
+This table stores the student's score for each Quiz, Summative Assessment, or Performance Task.
+
+Type:
+
+CREATE TABLE grades (
+    grade_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    assessment_id INT NOT NULL,
+    score DECIMAL(10,2) NOT NULL,
+
+    FOREIGN KEY (student_id)
+        REFERENCES students(student_id),
+
+    FOREIGN KEY (assessment_id)
+        REFERENCES assessments(assessment_id)
+);
+
+Step 50 — Execute
+
+Click the ⚡ Execute button.
+
+Step 51 — Check
+
+Run:
+
+SHOW TABLES;
+
+You should now have:
+
+users
+students
+teachers
+subjects
+sections
+enrollments
+assessments
+grades
+
+Step 52
+
+If there is no red error, stop here.
+
+Tell me Next → Table 9: attendance.
+
+Step 53 — Create attendance
+
+This table stores whether a student is Present, Absent, Late, or Excused.
+
+Type:
+
+CREATE TABLE attendance (
+    attendance_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    section_id INT NOT NULL,
+    attendance_date DATE NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    time_in TIME,
+
+    FOREIGN KEY (student_id)
+        REFERENCES students(student_id),
+
+    FOREIGN KEY (section_id)
+        REFERENCES sections(section_id)
+);
+
+Step 54 — Execute
+
+Click the ⚡ Execute button.
+
+Step 55 — Check
+
+Run:
+
+SHOW TABLES;
+
+You should now have:
+
+users
+students
+teachers
+subjects
+sections
+enrollments
+assessments
+grades
+attendance
+
+Step 56
+
+If there is no red error, stop here.
+
+Tell me Next → Table 10: qr_attendance.
+
+ Step 57 — Create qr_attendance
+
+This table will store attendance recorded through the QR code system.
+
+Type:
+
+CREATE TABLE qr_attendance (
+    qr_attendance_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    attendance_id INT NOT NULL,
+    qr_code VARCHAR(255) NOT NULL,
+    scanned_at DATETIME NOT NULL,
+
+    FOREIGN KEY (student_id)
+        REFERENCES students(student_id),
+
+    FOREIGN KEY (attendance_id)
+        REFERENCES attendance(attendance_id)
+);
+
+Step 58 — Execute
+
+Click the ⚡ Execute button.
+
+Step 59 — Check
+
+Run:
+
+SHOW TABLES;
+
+You should now have 10 tables:
+
+users
+students
+teachers
+subjects
+sections
+enrollments
+assessments
+grades
+attendance
+qr_attendance
+
+Step 60
+
+If there is no red error, stop here.
+
+Tell me Next → we'll create Table 11: notifications.				 				
+   								
+		
+Step 61 — Create notifications
+
+This table stores messages/notifications for students, teachers, and admins.
+
+Type:
+
+CREATE TABLE notifications (
+    notification_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    title VARCHAR(100) NOT NULL,
+    message TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id)
+        REFERENCES users(user_id)
+);
+
+Step 62 — Execute
+
+Click the ⚡ Execute button.
+
+Step 63 — Check
+
+Run:
+
+SHOW TABLES;
+
+You should now have:
+
+users
+students
+teachers
+subjects
+sections
+enrollments
+assessments
+grades
+attendance
+qr_attendance
+notifications
+
+Step 64
+
+If there is no red error, stop here.
+
+🎉 11 tables are now created.
+
+Tell me Next and we'll do the final table/check before moving to the Java → MySQL connection.		
+ 
+ 		
+Step 65 — Create the final table: admins 👨‍💼
+
+We originally planned 12 tables, and admins is the missing one.
+
+Type:
+
+CREATE TABLE admins (
+    admin_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+
+    FOREIGN KEY (user_id)
+        REFERENCES users(user_id)
+);
+
+Step 66 — Execute
+
+Click the ⚡ Execute button.
+
+Step 67 — Check all tables
+
+Run:
+
+SHOW TABLES;
+
+You should now have 12 tables:
+
+admins
+assessments
+attendance
+enrollments
+grades
+notifications
+qr_attendance
+sections
+students
+subjects
+teachers
+users
+
+Step 68 — Final check
+
+Run:
+
+SELECT DATABASE();
+
+It should show:
+
+school_management_system
+
+🎉 If all 12 tables appear, the database-table stage is complete.
+
+Next stage: Java Eclipse → MySQL connection, then we'll connect the Login JFrame first. 
+ 				
+ 												
+*/ 								
+	}
+}
