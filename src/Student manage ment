@@ -1,0 +1,4938 @@
+package com.lnhs.attendance.frame.admin;
+
+import com.lnhs.attendance.util.DatabaseConnection;
+import com.lnhs.attendance.util.LogoLoader;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+
+/**
+ * ============================================================
+ * LIBUNGAN NATIONAL HIGH SCHOOL
+ * LNHS ATTENDANCE MANAGEMENT SYSTEM
+ *
+ * StudentManagement.java
+ *
+ * Package:
+ * com.lnhs.attendance.frame.admin
+ *
+ * ============================================================
+ *
+ * FEATURES
+ *
+ * - View students
+ * - Expanded student information
+ * - Full name
+ * - LRN
+ * - Email
+ * - Contact number
+ * - Address
+ * - School level
+ * - Grade level
+ * - Section
+ * - Program
+ * - Track
+ * - Strand
+ * - School year
+ * - Enrollment status
+ * - Account status
+ * - Search
+ * - Refresh
+ * - Add Student
+ * - Edit Student
+ * - Activate / Deactivate
+ * - Double-click edit
+ * - Back to Dashboard
+ * - LNHS logo
+ * - LNHS professional theme
+ * - Resizable window
+ *
+ * ============================================================
+ */
+public class StudentManagement extends JFrame {
+
+    private static final long serialVersionUID = 1L;
+
+    // =========================================================
+    // COLORS
+    // =========================================================
+
+    private static final Color NAVY =
+            Color.decode("#12355B");
+
+    private static final Color ROYAL_BLUE =
+            Color.decode("#1E5AA8");
+
+    private static final Color GOLD =
+            Color.decode("#F4B942");
+
+    private static final Color LIGHT_GRAY =
+            Color.decode("#F5F7FA");
+
+    private static final Color DARK_TEXT =
+            Color.decode("#263238");
+
+    private static final Color MUTED_TEXT =
+            Color.decode("#607D8B");
+
+    private static final Color WHITE =
+            Color.WHITE;
+
+    private static final Color BORDER =
+            Color.decode("#D9E0E6");
+
+    private static final Color LIGHT_BLUE =
+            Color.decode("#EAF2FB");
+
+    private static final Color SUCCESS =
+            Color.decode("#2E7D32");
+
+    private static final Color DANGER =
+            Color.decode("#C62828");
+
+    private static final Color SOFT_RED =
+            Color.decode("#FDECEC");
+
+    // =========================================================
+    // ADMIN
+    // =========================================================
+
+    private int adminUserId;
+
+    // =========================================================
+    // TABLE
+    // =========================================================
+
+    private JTextField searchField;
+
+    private JTable studentTable;
+
+    private DefaultTableModel tableModel;
+
+    private JLabel recordCountLabel;
+
+    private JLabel statusLabel;
+
+    // =========================================================
+    // BUTTONS
+    // =========================================================
+
+    private JButton searchButton;
+
+    private JButton refreshButton;
+
+    private JButton addButton;
+
+    private JButton editButton;
+
+    private JButton statusButton;
+
+    private JButton backButton;
+
+    // =========================================================
+    // CONSTRUCTOR
+    // =========================================================
+
+    public StudentManagement(int adminUserId) {
+
+        this.adminUserId = adminUserId;
+
+        initializeFrame();
+
+        initializeComponents();
+
+        initializeUI();
+
+        initializeActions();
+
+        loadStudents();
+    }
+
+    // =========================================================
+    // DEFAULT CONSTRUCTOR
+    // =========================================================
+
+    public StudentManagement() {
+
+        this(0);
+    }
+
+    // =========================================================
+    // FRAME
+    // =========================================================
+
+    private void initializeFrame() {
+
+        setTitle(
+                "LNHS Attendance System - Student Management"
+        );
+
+        setSize(
+                1500,
+                900
+        );
+
+        setMinimumSize(
+                new Dimension(
+                        1150,
+                        700
+                )
+        );
+
+        setResizable(true);
+
+        setDefaultCloseOperation(
+                JFrame.DISPOSE_ON_CLOSE
+        );
+
+        setLocationRelativeTo(null);
+    }
+
+    // =========================================================
+    // COMPONENTS
+    // =========================================================
+
+    private void initializeComponents() {
+
+        searchField =
+                new JTextField();
+
+        searchField.setPreferredSize(
+                new Dimension(
+                        350,
+                        40
+                )
+        );
+
+        searchField.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.PLAIN,
+                        13
+                )
+        );
+
+        searchField.setForeground(
+                DARK_TEXT
+        );
+
+        searchField.setBackground(
+                WHITE
+        );
+
+        searchField.setCaretColor(
+                ROYAL_BLUE
+        );
+
+        searchField.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(
+                                BORDER,
+                                1
+                        ),
+                        BorderFactory.createEmptyBorder(
+                                0,
+                                12,
+                                0,
+                                12
+                        )
+                )
+        );
+
+        searchButton =
+                createPrimaryButton(
+                        "Search"
+                );
+
+        refreshButton =
+                createSecondaryButton(
+                        "Refresh"
+                );
+
+        addButton =
+                createGoldButton(
+                        "+ Add Student"
+                );
+
+        editButton =
+                createSecondaryButton(
+                        "Edit"
+                );
+
+        statusButton =
+                createStatusButton();
+
+        backButton =
+                createBackButton(
+                        "← Back to Dashboard"
+                );
+
+        // =====================================================
+        // TABLE MODEL
+        // =====================================================
+
+        tableModel =
+                new DefaultTableModel(
+                        new Object[] {
+
+                                "Student ID",
+                                "School Student ID",
+                                "LRN",
+                                "Full Name",
+                                "Email",
+                                "Contact Number",
+                                "Address",
+                                "Grade Level",
+                                "Section",
+                                "School Level",
+                                "Program",
+                                "Track",
+                                "Strand",
+                                "School Year",
+                                "Enrollment",
+                                "Status"
+
+                        },
+                        0
+                ) {
+
+                    private static final long serialVersionUID =
+                            1L;
+
+                    @Override
+                    public boolean isCellEditable(
+                            int row,
+                            int column
+                    ) {
+
+                        return false;
+                    }
+                };
+
+        studentTable =
+                new JTable(
+                        tableModel
+                );
+
+        configureTable();
+    }
+
+    // =========================================================
+    // UI
+    // =========================================================
+
+    private void initializeUI() {
+
+        JPanel mainPanel =
+                new JPanel(
+                        new BorderLayout()
+                );
+
+        mainPanel.setBackground(
+                LIGHT_GRAY
+        );
+
+        mainPanel.add(
+                createHeader(),
+                BorderLayout.NORTH
+        );
+
+        JPanel content =
+                new JPanel(
+                        new BorderLayout(
+                                0,
+                                15
+                        )
+                );
+
+        content.setBackground(
+                LIGHT_GRAY
+        );
+
+        content.setBorder(
+                new EmptyBorder(
+                        20,
+                        25,
+                        10,
+                        25
+                )
+        );
+
+        content.add(
+                createToolbar(),
+                BorderLayout.NORTH
+        );
+
+        content.add(
+                createTablePanel(),
+                BorderLayout.CENTER
+        );
+
+        mainPanel.add(
+                content,
+                BorderLayout.CENTER
+        );
+
+        mainPanel.add(
+                createFooter(),
+                BorderLayout.SOUTH
+        );
+
+        setContentPane(
+                mainPanel
+        );
+    }
+
+    // =========================================================
+    // HEADER
+    // =========================================================
+
+    private JPanel createHeader() {
+
+        JPanel header =
+                new JPanel(
+                        new BorderLayout()
+                );
+
+        header.setBackground(
+                NAVY
+        );
+
+        header.setBorder(
+                new EmptyBorder(
+                        12,
+                        25,
+                        12,
+                        25
+                )
+        );
+
+        JPanel left =
+                new JPanel(
+                        new FlowLayout(
+                                FlowLayout.LEFT,
+                                15,
+                                0
+                        )
+                );
+
+        left.setOpaque(false);
+
+        ImageIcon logoIcon =
+                LogoLoader.loadLogo(
+                        72,
+                        72
+                );
+
+        JLabel logoLabel;
+
+        if (logoIcon != null) {
+
+            logoLabel =
+                    new JLabel(
+                            logoIcon
+                    );
+
+        } else {
+
+            logoLabel =
+                    new JLabel(
+                            "LNHS",
+                            SwingConstants.CENTER
+                    );
+
+            logoLabel.setForeground(
+                    GOLD
+            );
+
+            logoLabel.setFont(
+                    new Font(
+                            "Segoe UI",
+                            Font.BOLD,
+                            28
+                    )
+            );
+        }
+
+        left.add(
+                logoLabel
+        );
+
+        JPanel titlePanel =
+                new JPanel(
+                        new GridBagLayout()
+                );
+
+        titlePanel.setOpaque(false);
+
+        GridBagConstraints gbc =
+                new GridBagConstraints();
+
+        gbc.gridx = 0;
+
+        gbc.gridy = 0;
+
+        gbc.anchor =
+                GridBagConstraints.WEST;
+
+        gbc.insets =
+                new Insets(
+                        0,
+                        0,
+                        3,
+                        0
+                );
+
+        JLabel title =
+                new JLabel(
+                        "Student Management"
+                );
+
+        title.setForeground(
+                WHITE
+        );
+
+        title.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        24
+                )
+        );
+
+        titlePanel.add(
+                title,
+                gbc
+        );
+
+        gbc.gridy = 1;
+
+        JLabel subtitle =
+                new JLabel(
+                        "Manage complete student profiles, enrollment and account status"
+                );
+
+        subtitle.setForeground(
+                Color.decode(
+                        "#D9E7F5"
+                )
+        );
+
+        subtitle.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.PLAIN,
+                        12
+                )
+        );
+
+        titlePanel.add(
+                subtitle,
+                gbc
+        );
+
+        left.add(
+                titlePanel
+        );
+
+        header.add(
+                left,
+                BorderLayout.WEST
+        );
+
+        JPanel right =
+                new JPanel(
+                        new FlowLayout(
+                                FlowLayout.RIGHT,
+                                5,
+                                12
+                        )
+                );
+
+        right.setOpaque(false);
+
+        JLabel adminLabel =
+                new JLabel(
+                        "ADMIN",
+                        SwingConstants.CENTER
+                );
+
+        adminLabel.setForeground(
+                NAVY
+        );
+
+        adminLabel.setBackground(
+                GOLD
+        );
+
+        adminLabel.setOpaque(
+                true
+        );
+
+        adminLabel.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        11
+                )
+        );
+
+        adminLabel.setBorder(
+                BorderFactory.createEmptyBorder(
+                        7,
+                        15,
+                        7,
+                        15
+                )
+        );
+
+        right.add(
+                adminLabel
+        );
+
+        header.add(
+                right,
+                BorderLayout.EAST
+        );
+
+        return header;
+    }
+
+    // =========================================================
+    // TOOLBAR
+    // =========================================================
+
+    private JPanel createToolbar() {
+
+        JPanel toolbar =
+                new JPanel(
+                        new BorderLayout()
+                );
+
+        toolbar.setBackground(
+                ROYAL_BLUE
+        );
+
+        toolbar.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(
+                                NAVY,
+                                1
+                        ),
+                        BorderFactory.createEmptyBorder(
+                                12,
+                                15,
+                                12,
+                                15
+                        )
+                )
+        );
+
+        JPanel searchPanel =
+                new JPanel(
+                        new FlowLayout(
+                                FlowLayout.LEFT,
+                                8,
+                                0
+                        )
+                );
+
+        searchPanel.setOpaque(false);
+
+        JLabel searchLabel =
+                new JLabel(
+                        "Search Student:"
+                );
+
+        searchLabel.setForeground(
+                WHITE
+        );
+
+        searchLabel.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        13
+                )
+        );
+
+        searchPanel.add(
+                searchLabel
+        );
+
+        searchPanel.add(
+                searchField
+        );
+
+        searchPanel.add(
+                searchButton
+        );
+
+        searchPanel.add(
+                refreshButton
+        );
+
+        toolbar.add(
+                searchPanel,
+                BorderLayout.WEST
+        );
+
+        JPanel actionPanel =
+                new JPanel(
+                        new FlowLayout(
+                                FlowLayout.RIGHT,
+                                8,
+                                0
+                        )
+                );
+
+        actionPanel.setOpaque(false);
+
+        actionPanel.add(
+                addButton
+        );
+
+        actionPanel.add(
+                editButton
+        );
+
+        actionPanel.add(
+                statusButton
+        );
+
+        toolbar.add(
+                actionPanel,
+                BorderLayout.EAST
+        );
+
+        return toolbar;
+    }
+
+    // =========================================================
+    // TABLE PANEL
+    // =========================================================
+
+    private JPanel createTablePanel() {
+
+        JPanel panel =
+                new JPanel(
+                        new BorderLayout()
+                );
+
+        panel.setBackground(
+                WHITE
+        );
+
+        panel.setBorder(
+                BorderFactory.createLineBorder(
+                        BORDER,
+                        1
+                )
+        );
+
+        JPanel tableHeader =
+                new JPanel(
+                        new BorderLayout()
+                );
+
+        tableHeader.setBackground(
+                GOLD
+        );
+
+        tableHeader.setBorder(
+                BorderFactory.createEmptyBorder(
+                        12,
+                        15,
+                        10,
+                        15
+                )
+        );
+
+        JLabel title =
+                new JLabel(
+                        "Student Records"
+                );
+
+        title.setForeground(
+                NAVY
+        );
+
+        title.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        16
+                )
+        );
+
+        tableHeader.add(
+                title,
+                BorderLayout.WEST
+        );
+
+        recordCountLabel =
+                new JLabel(
+                        "0 students"
+                );
+
+        recordCountLabel.setForeground(
+                NAVY
+        );
+
+        recordCountLabel.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        12
+                )
+        );
+
+        tableHeader.add(
+                recordCountLabel,
+                BorderLayout.EAST
+        );
+
+        panel.add(
+                tableHeader,
+                BorderLayout.NORTH
+        );
+
+        JScrollPane scrollPane =
+                new JScrollPane(
+                        studentTable
+                );
+
+        scrollPane.setBorder(
+                BorderFactory.createEmptyBorder()
+        );
+
+        scrollPane.getViewport().setBackground(
+                WHITE
+        );
+
+        panel.add(
+                scrollPane,
+                BorderLayout.CENTER
+        );
+
+        return panel;
+    }
+
+    // =========================================================
+    // FOOTER
+    // =========================================================
+
+    private JPanel createFooter() {
+
+        JPanel footer =
+                new JPanel(
+                        new BorderLayout()
+                );
+
+        footer.setBackground(
+                NAVY
+        );
+
+        footer.setBorder(
+                new EmptyBorder(
+                        8,
+                        25,
+                        15,
+                        25
+                )
+        );
+
+        footer.add(
+                backButton,
+                BorderLayout.WEST
+        );
+
+        statusLabel =
+                new JLabel(
+                        "Ready"
+                );
+
+        statusLabel.setForeground(
+                Color.decode(
+                        "#D9E7F5"
+                )
+        );
+
+        statusLabel.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.PLAIN,
+                        12
+                )
+        );
+
+        footer.add(
+                statusLabel,
+                BorderLayout.EAST
+        );
+
+        return footer;
+    }
+
+    // =========================================================
+    // TABLE CONFIGURATION
+    // =========================================================
+
+    private void configureTable() {
+
+        studentTable.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.PLAIN,
+                        12
+                )
+        );
+
+        studentTable.setForeground(
+                DARK_TEXT
+        );
+
+        studentTable.setBackground(
+                WHITE
+        );
+
+        studentTable.setRowHeight(
+                38
+        );
+
+        studentTable.setSelectionMode(
+                ListSelectionModel.SINGLE_SELECTION
+        );
+
+        studentTable.setSelectionBackground(
+                LIGHT_BLUE
+        );
+
+        studentTable.setSelectionForeground(
+                NAVY
+        );
+
+        studentTable.setShowGrid(
+                false
+        );
+
+        studentTable.setIntercellSpacing(
+                new Dimension(
+                        0,
+                        0
+                )
+        );
+
+        studentTable.setAutoCreateRowSorter(
+                true
+        );
+
+        studentTable.setFillsViewportHeight(
+                true
+        );
+
+        JTableHeader header =
+                studentTable.getTableHeader();
+
+        header.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        12
+                )
+        );
+
+        header.setForeground(
+                WHITE
+        );
+
+        header.setBackground(
+                NAVY
+        );
+
+        header.setPreferredSize(
+                new Dimension(
+                        0,
+                        42
+                )
+        );
+
+        header.setReorderingAllowed(
+                false
+        );
+
+        DefaultTableCellRenderer center =
+                new DefaultTableCellRenderer();
+
+        center.setHorizontalAlignment(
+                SwingConstants.CENTER
+        );
+
+        int[] centeredColumns = {
+
+                0,
+                1,
+                2,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15
+
+        };
+
+        for (int column :
+                centeredColumns) {
+
+            studentTable
+                    .getColumnModel()
+                    .getColumn(column)
+                    .setCellRenderer(
+                            center
+                    );
+        }
+
+        int[] widths = {
+
+                80,
+                130,
+                130,
+                190,
+                190,
+                130,
+                220,
+                100,
+                130,
+                110,
+                120,
+                120,
+                120,
+                100,
+                120,
+                90
+
+        };
+
+        for (
+                int i = 0;
+                i < widths.length;
+                i++
+        ) {
+
+            studentTable
+                    .getColumnModel()
+                    .getColumn(i)
+                    .setPreferredWidth(
+                            widths[i]
+                    );
+        }
+
+        studentTable.addMouseListener(
+                new MouseAdapter() {
+
+                    @Override
+                    public void mouseClicked(
+                            MouseEvent e
+                    ) {
+
+                        if (
+                                e.getClickCount()
+                                        == 2
+                        ) {
+
+                            editSelectedStudent();
+                        }
+                    }
+                }
+        );
+    }
+
+    // =========================================================
+    // LOAD STUDENTS
+    // =========================================================
+
+    private void loadStudents() {
+
+        loadStudents("");
+    }
+
+    // =========================================================
+    // LOAD STUDENTS SEARCH
+    // =========================================================
+
+    private void loadStudents(
+            String keyword
+    ) {
+
+        tableModel.setRowCount(
+                0
+        );
+
+        String sql =
+                """
+                SELECT
+
+                    s.student_id,
+
+                    s.school_student_id,
+
+                    s.lrn,
+
+                    CONCAT(
+                        u.first_name,
+                        ' ',
+                        COALESCE(
+                            CONCAT(
+                                u.middle_name,
+                                ' '
+                            ),
+                            ''
+                        ),
+                        u.last_name
+                    ) AS full_name,
+
+                    COALESCE(
+                        u.email,
+                        '-'
+                    ) AS email,
+
+                    COALESCE(
+                        s.contact_number,
+                        '-'
+                    ) AS contact_number,
+
+                    COALESCE(
+                        s.address,
+                        '-'
+                    ) AS address,
+
+                    COALESCE(
+                        gl.grade_name,
+                        'Not Enrolled'
+                    ) AS grade_name,
+
+                    COALESCE(
+                        sec.section_name,
+                        'Not Assigned'
+                    ) AS section_name,
+
+                    COALESCE(
+                        sl.level_name,
+                        'Not Assigned'
+                    ) AS level_name,
+
+                    COALESCE(
+                        p.program_name,
+                        '-'
+                    ) AS program_name,
+
+                    COALESCE(
+                        t.track_name,
+                        '-'
+                    ) AS track_name,
+
+                    COALESCE(
+                        st.strand_name,
+                        '-'
+                    ) AS strand_name,
+
+                    COALESCE(
+                        sy.school_year,
+                        '-'
+                    ) AS school_year,
+
+                    COALESCE(
+                        e.enrollment_status,
+                        'NO ENROLLMENT'
+                    ) AS enrollment_status,
+
+                    CASE
+                        WHEN u.is_active = 1
+                        THEN 'ACTIVE'
+                        ELSE 'INACTIVE'
+                    END AS account_status
+
+                FROM students s
+
+                INNER JOIN users u
+                    ON s.user_id = u.user_id
+
+                LEFT JOIN enrollments e
+                    ON s.student_id = e.student_id
+
+                    AND (
+                        e.school_year_id = (
+                            SELECT
+                                sy2.school_year_id
+
+                            FROM school_years sy2
+
+                            WHERE sy2.is_current = 1
+
+                            ORDER BY
+                                sy2.school_year_id DESC
+
+                            LIMIT 1
+                        )
+
+                        OR e.school_year_id IS NULL
+                    )
+
+                LEFT JOIN school_years sy
+                    ON e.school_year_id =
+                       sy.school_year_id
+
+                LEFT JOIN school_levels sl
+                    ON e.school_level_id =
+                       sl.school_level_id
+
+                LEFT JOIN grade_levels gl
+                    ON e.grade_level_id =
+                       gl.grade_level_id
+
+                LEFT JOIN programs p
+                    ON e.program_id =
+                       p.program_id
+
+                LEFT JOIN tracks t
+                    ON e.track_id =
+                       t.track_id
+
+                LEFT JOIN strands st
+                    ON e.strand_id =
+                       st.strand_id
+
+                LEFT JOIN sections sec
+                    ON e.section_id =
+                       sec.section_id
+
+                WHERE
+
+                    (
+                        ? = ''
+
+                        OR s.school_student_id LIKE ?
+
+                        OR s.lrn LIKE ?
+
+                        OR u.first_name LIKE ?
+
+                        OR u.middle_name LIKE ?
+
+                        OR u.last_name LIKE ?
+
+                        OR CONCAT(
+                            u.first_name,
+                            ' ',
+                            u.last_name
+                        ) LIKE ?
+
+                        OR u.email LIKE ?
+
+                        OR s.contact_number LIKE ?
+
+                        OR s.address LIKE ?
+
+                        OR gl.grade_name LIKE ?
+
+                        OR sec.section_name LIKE ?
+
+                        OR sl.level_name LIKE ?
+
+                        OR p.program_name LIKE ?
+
+                        OR t.track_name LIKE ?
+
+                        OR st.strand_name LIKE ?
+                    )
+
+                ORDER BY
+
+                    u.last_name ASC,
+
+                    u.first_name ASC
+                """;
+
+        String search =
+                keyword == null
+                        ? ""
+                        : keyword.trim();
+
+        String pattern =
+                "%"
+                        + search
+                        + "%";
+
+        try (
+                Connection connection =
+                        DatabaseConnection.getConnection();
+
+                PreparedStatement statement =
+                        connection.prepareStatement(
+                                sql
+                        )
+        ) {
+
+            statement.setString(
+                    1,
+                    search
+            );
+
+            for (
+                    int i = 2;
+                    i <= 16;
+                    i++
+            ) {
+
+                statement.setString(
+                        i,
+                        pattern
+                );
+            }
+
+            try (
+                    ResultSet result =
+                            statement.executeQuery()
+            ) {
+
+                while (
+                        result.next()
+                ) {
+
+                    tableModel.addRow(
+                            new Object[] {
+
+                                    result.getInt(
+                                            "student_id"
+                                    ),
+
+                                    result.getString(
+                                            "school_student_id"
+                                    ),
+
+                                    result.getString(
+                                            "lrn"
+                                    ),
+
+                                    result.getString(
+                                            "full_name"
+                                    ),
+
+                                    result.getString(
+                                            "email"
+                                    ),
+
+                                    result.getString(
+                                            "contact_number"
+                                    ),
+
+                                    result.getString(
+                                            "address"
+                                    ),
+
+                                    result.getString(
+                                            "grade_name"
+                                    ),
+
+                                    result.getString(
+                                            "section_name"
+                                    ),
+
+                                    result.getString(
+                                            "level_name"
+                                    ),
+
+                                    result.getString(
+                                            "program_name"
+                                    ),
+
+                                    result.getString(
+                                            "track_name"
+                                    ),
+
+                                    result.getString(
+                                            "strand_name"
+                                    ),
+
+                                    result.getString(
+                                            "school_year"
+                                    ),
+
+                                    result.getString(
+                                            "enrollment_status"
+                                    ),
+
+                                    result.getString(
+                                            "account_status"
+                                    )
+                            }
+                    );
+                }
+            }
+
+            updateRecordCount();
+
+            if (
+                    search.isEmpty()
+            ) {
+
+                setStatus(
+                        "Student records loaded."
+                );
+
+            } else {
+
+                setStatus(
+                        "Search completed."
+                );
+            }
+
+        } catch (
+                SQLException ex
+        ) {
+
+            setStatus(
+                    "Unable to load student records."
+            );
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Unable to load student records.\n\n"
+                            + ex.getMessage(),
+                    "Database Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+
+            ex.printStackTrace();
+        }
+    }
+
+    // =========================================================
+    // RECORD COUNT
+    // =========================================================
+
+    private void updateRecordCount() {
+
+        int count =
+                tableModel.getRowCount();
+
+        recordCountLabel.setText(
+                count == 1
+                        ? "1 student"
+                        : count + " students"
+        );
+    }
+
+    // =========================================================
+    // SEARCH
+    // =========================================================
+
+    private void performSearch() {
+
+        loadStudents(
+                searchField
+                        .getText()
+                        .trim()
+        );
+    }
+
+    // =========================================================
+    // REFRESH
+    // =========================================================
+
+    private void refreshStudents() {
+
+        searchField.setText("");
+
+        loadStudents();
+
+        setStatus(
+                "Student records refreshed."
+        );
+    }
+
+    // =========================================================
+    // ADD STUDENT
+    // =========================================================
+
+    private void addStudent() {
+
+        showStudentDialog(
+                false,
+                -1
+        );
+    }
+
+    // =========================================================
+    // EDIT STUDENT
+    // =========================================================
+
+    private void editSelectedStudent() {
+
+        int viewRow =
+                studentTable.getSelectedRow();
+
+        if (
+                viewRow == -1
+        ) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Please select a student first.",
+                    "Edit Student",
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            return;
+        }
+
+        int modelRow =
+                studentTable
+                        .convertRowIndexToModel(
+                                viewRow
+                        );
+
+        int studentId =
+                Integer.parseInt(
+                        tableModel
+                                .getValueAt(
+                                        modelRow,
+                                        0
+                                )
+                                .toString()
+                );
+
+        showStudentDialog(
+                true,
+                studentId
+        );
+    }
+
+    // =========================================================
+    // STUDENT DIALOG
+    // =========================================================
+
+    private void showStudentDialog(
+            boolean editMode,
+            int studentId
+    ) {
+
+        JDialog dialog =
+                new JDialog(
+                        this,
+                        editMode
+                                ? "Edit Student"
+                                : "Add Student",
+                        true
+                );
+
+        dialog.setSize(
+                850,
+                720
+        );
+
+        dialog.setMinimumSize(
+                new Dimension(
+                        750,
+                        650
+                )
+        );
+
+        dialog.setLocationRelativeTo(
+                this
+        );
+
+        JPanel root =
+                new JPanel(
+                        new BorderLayout()
+                );
+
+        root.setBackground(
+                LIGHT_GRAY
+        );
+
+        // =====================================================
+        // DIALOG HEADER
+        // =====================================================
+
+        JPanel header =
+                new JPanel(
+                        new BorderLayout()
+                );
+
+        header.setBackground(
+                NAVY
+        );
+
+        header.setBorder(
+                new EmptyBorder(
+                        15,
+                        20,
+                        15,
+                        20
+                )
+        );
+
+        JLabel title =
+                new JLabel(
+                        editMode
+                                ? "Edit Student Information"
+                                : "Add New Student"
+                );
+
+        title.setForeground(
+                WHITE
+        );
+
+        title.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        20
+                )
+        );
+
+        header.add(
+                title,
+                BorderLayout.WEST
+        );
+
+        JLabel admin =
+                new JLabel(
+                        editMode
+                                ? "EDIT STUDENT"
+                                : "NEW STUDENT"
+                );
+
+        admin.setForeground(
+                NAVY
+        );
+
+        admin.setBackground(
+                GOLD
+        );
+
+        admin.setOpaque(
+                true
+        );
+
+        admin.setBorder(
+                BorderFactory.createEmptyBorder(
+                        6,
+                        10,
+                        6,
+                        10
+                )
+        );
+
+        admin.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        10
+                )
+        );
+
+        header.add(
+                admin,
+                BorderLayout.EAST
+        );
+
+        root.add(
+                header,
+                BorderLayout.NORTH
+        );
+
+        // =====================================================
+        // FORM
+        // =====================================================
+
+        JPanel form =
+                new JPanel(
+                        new GridBagLayout()
+                );
+
+        form.setBackground(
+                WHITE
+        );
+
+        form.setBorder(
+                new EmptyBorder(
+                        20,
+                        25,
+                        20,
+                        25
+                )
+        );
+
+        GridBagConstraints gbc =
+                new GridBagConstraints();
+
+        gbc.insets =
+                new Insets(
+                        6,
+                        6,
+                        6,
+                        6
+                );
+
+        gbc.fill =
+                GridBagConstraints.HORIZONTAL;
+
+        gbc.weightx = 1;
+
+        // -----------------------------------------------------
+        // FIELDS
+        // -----------------------------------------------------
+
+        JTextField schoolStudentIdField =
+                createTextField();
+
+        JTextField lrnField =
+                createTextField();
+
+        JTextField firstNameField =
+                createTextField();
+
+        JTextField middleNameField =
+                createTextField();
+
+        JTextField lastNameField =
+                createTextField();
+
+        JTextField emailField =
+                createTextField();
+
+        JTextField contactField =
+                createTextField();
+
+        JTextArea addressArea =
+                new JTextArea(
+                        3,
+                        20
+                );
+
+        addressArea.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.PLAIN,
+                        13
+                )
+        );
+
+        addressArea.setLineWrap(
+                true
+        );
+
+        addressArea.setWrapStyleWord(
+                true
+        );
+
+        addressArea.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(
+                                BORDER
+                        ),
+                        BorderFactory.createEmptyBorder(
+                                7,
+                                9,
+                                7,
+                                9
+                        )
+                )
+        );
+
+        JScrollPane addressScroll =
+                new JScrollPane(
+                        addressArea
+                );
+
+        addressScroll.setPreferredSize(
+                new Dimension(
+                        0,
+                        70
+                )
+        );
+
+        JTextField usernameField =
+                createTextField();
+
+        JPasswordField passwordField =
+                new JPasswordField();
+
+        passwordField.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.PLAIN,
+                        13
+                )
+        );
+
+        passwordField.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(
+                                BORDER
+                        ),
+                        BorderFactory.createEmptyBorder(
+                                7,
+                                9,
+                                7,
+                                9
+                        )
+                )
+        );
+
+        // =====================================================
+        // COMBO BOXES
+        // =====================================================
+
+        JComboBox<LookupItem> schoolLevelCombo =
+                new JComboBox<>();
+
+        JComboBox<LookupItem> gradeCombo =
+                new JComboBox<>();
+
+        JComboBox<LookupItem> sectionCombo =
+                new JComboBox<>();
+
+        JComboBox<LookupItem> programCombo =
+                new JComboBox<>();
+
+        JComboBox<LookupItem> trackCombo =
+                new JComboBox<>();
+
+        JComboBox<LookupItem> strandCombo =
+                new JComboBox<>();
+
+        JComboBox<LookupItem> schoolYearCombo =
+                new JComboBox<>();
+
+        JComboBox<String> enrollmentStatusCombo =
+                new JComboBox<>(
+                        new String[] {
+                                "ENROLLED",
+                                "PENDING",
+                                "DROPPED",
+                                "TRANSFERRED",
+                                "COMPLETED"
+                        }
+                );
+
+        styleCombo(
+                schoolLevelCombo
+        );
+
+        styleCombo(
+                gradeCombo
+        );
+
+        styleCombo(
+                sectionCombo
+        );
+
+        styleCombo(
+                programCombo
+        );
+
+        styleCombo(
+                trackCombo
+        );
+
+        styleCombo(
+                strandCombo
+        );
+
+        styleCombo(
+                schoolYearCombo
+        );
+
+        styleCombo(
+                enrollmentStatusCombo
+        );
+
+        // =====================================================
+        // LOAD LOOKUPS
+        // =====================================================
+
+        loadLookup(
+                schoolLevelCombo,
+                "SELECT school_level_id, level_name "
+                        + "FROM school_levels "
+                        + "ORDER BY level_name",
+                "school_level_id",
+                "level_name"
+        );
+
+        loadLookup(
+                gradeCombo,
+                "SELECT grade_level_id, grade_name "
+                        + "FROM grade_levels "
+                        + "ORDER BY grade_level_id",
+                "grade_level_id",
+                "grade_name"
+        );
+
+        loadLookup(
+                sectionCombo,
+                "SELECT section_id, section_name "
+                        + "FROM sections "
+                        + "ORDER BY section_name",
+                "section_id",
+                "section_name"
+        );
+
+        loadLookup(
+                programCombo,
+                "SELECT program_id, program_name "
+                        + "FROM programs "
+                        + "ORDER BY program_name",
+                "program_id",
+                "program_name"
+        );
+
+        loadLookup(
+                trackCombo,
+                "SELECT track_id, track_name "
+                        + "FROM tracks "
+                        + "ORDER BY track_name",
+                "track_id",
+                "track_name"
+        );
+
+        loadLookup(
+                strandCombo,
+                "SELECT strand_id, strand_name "
+                        + "FROM strands "
+                        + "ORDER BY strand_name",
+                "strand_id",
+                "strand_name"
+        );
+
+        loadLookup(
+                schoolYearCombo,
+                "SELECT school_year_id, school_year "
+                        + "FROM school_years "
+                        + "ORDER BY school_year_id DESC",
+                "school_year_id",
+                "school_year"
+        );
+
+        // =====================================================
+        // FORM LAYOUT
+        // =====================================================
+
+        int row = 0;
+
+        addFormRow(
+                form,
+                gbc,
+                row++,
+                "School Student ID *",
+                schoolStudentIdField,
+                "LRN *",
+                lrnField
+        );
+
+        addFormRow(
+                form,
+                gbc,
+                row++,
+                "First Name *",
+                firstNameField,
+                "Middle Name",
+                middleNameField
+        );
+
+        addFormRow(
+                form,
+                gbc,
+                row++,
+                "Last Name *",
+                lastNameField,
+                "Email *",
+                emailField
+        );
+
+        addFormRow(
+                form,
+                gbc,
+                row++,
+                "Contact Number",
+                contactField,
+                "Username *",
+                usernameField
+        );
+
+        addFormRow(
+                form,
+                gbc,
+                row++,
+                "Password *",
+                passwordField,
+                "School Level",
+                schoolLevelCombo
+        );
+
+        addFormRow(
+                form,
+                gbc,
+                row++,
+                "Grade Level",
+                gradeCombo,
+                "Section",
+                sectionCombo
+        );
+
+        addFormRow(
+                form,
+                gbc,
+                row++,
+                "Program",
+                programCombo,
+                "Track",
+                trackCombo
+        );
+
+        addFormRow(
+                form,
+                gbc,
+                row++,
+                "Strand",
+                strandCombo,
+                "School Year",
+                schoolYearCombo
+        );
+
+        addFormRow(
+                form,
+                gbc,
+                row++,
+                "Enrollment Status",
+                enrollmentStatusCombo,
+                "",
+                new JLabel("")
+        );
+
+        // Address
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        gbc.gridwidth = 1;
+
+        form.add(
+                createFormLabel(
+                        "Address"
+                ),
+                gbc
+        );
+
+        gbc.gridx = 1;
+        gbc.gridy = row;
+        gbc.gridwidth = 3;
+        gbc.weightx = 1;
+
+        form.add(
+                addressScroll,
+                gbc
+        );
+
+        row++;
+
+        // =====================================================
+        // PASSWORD NOTE
+        // =====================================================
+
+        JLabel passwordNote =
+                new JLabel(
+                        editMode
+                                ? "Leave password blank to keep the current password."
+                                : "The password will be stored using SHA-256 hashing."
+                );
+
+        passwordNote.setForeground(
+                MUTED_TEXT
+        );
+
+        passwordNote.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.ITALIC,
+                        11
+                )
+        );
+
+        gbc.gridx = 1;
+        gbc.gridy = row++;
+        gbc.gridwidth = 3;
+
+        form.add(
+                passwordNote,
+                gbc
+        );
+
+        JScrollPane formScroll =
+                new JScrollPane(
+                        form
+                );
+
+        formScroll.setBorder(
+                BorderFactory.createEmptyBorder()
+        );
+
+        root.add(
+                formScroll,
+                BorderLayout.CENTER
+        );
+
+        // =====================================================
+        // BUTTONS
+        // =====================================================
+
+        JPanel buttons =
+                new JPanel(
+                        new FlowLayout(
+                                FlowLayout.RIGHT,
+                                10,
+                                12
+                        )
+                );
+
+        buttons.setBackground(
+                NAVY
+        );
+
+        JButton cancelButton =
+                createSecondaryButton(
+                        "Cancel"
+                );
+
+        JButton saveButton =
+                createGoldButton(
+                        editMode
+                                ? "Save Changes"
+                                : "Add Student"
+                );
+
+        buttons.add(
+                cancelButton
+        );
+
+        buttons.add(
+                saveButton
+        );
+
+        root.add(
+                buttons,
+                BorderLayout.SOUTH
+        );
+
+        cancelButton.addActionListener(
+                e -> dialog.dispose()
+        );
+
+        saveButton.addActionListener(
+                e -> {
+
+                    if (
+                            editMode
+                    ) {
+                    
+                    	private void updateStudent(
+                    	        JDialog dialog,
+                    	        int studentId,
+                    	        JTextField schoolStudentIdField,
+                    	        JTextField lrnField,
+                    	        JTextField firstNameField,
+                    	        JTextField middleNameField,
+                    	        JTextField lastNameField,
+                    	        JTextField emailField,
+                    	        JTextField contactField,
+                    	        JTextArea addressArea,
+                    	        JTextField usernameField,
+                    	        JPasswordField passwordField,
+                    	        JComboBox<LookupItem> schoolLevelCombo,
+                    	        JComboBox<LookupItem> gradeCombo,
+                    	        JComboBox<LookupItem> sectionCombo,
+                    	        JComboBox<LookupItem> programCombo,
+                    	        JComboBox<LookupItem> trackCombo,
+                    	        JComboBox<LookupItem> strandCombo,
+                    	        JComboBox<LookupItem> schoolYearCombo,
+                    	        JComboBox<String> enrollmentStatusCombo
+                    	);
+                    	
+                    } else {
+
+                        insertStudent(
+                                dialog,
+                                schoolStudentIdField,
+                                lrnField,
+                                firstNameField,
+                                middleNameField,
+                                lastNameField,
+                                emailField,
+                                contactField,
+                                addressArea,
+                                usernameField,
+                                passwordField,
+                                schoolLevelCombo,
+                                gradeCombo,
+                                sectionCombo,
+                                programCombo,
+                                trackCombo,
+                                strandCombo,
+                                schoolYearCombo,
+                                enrollmentStatusCombo
+                        );
+                    }
+                }
+        );
+
+        // =====================================================
+        // LOAD EXISTING DATA
+        // =====================================================
+
+        if (
+                editMode
+        ) {
+
+            loadStudentIntoForm(
+                    studentId,
+                    schoolStudentIdField,
+                    lrnField,
+                    firstNameField,
+                    middleNameField,
+                    lastNameField,
+                    emailField,
+                    contactField,
+                    addressArea,
+                    usernameField,
+                    schoolLevelCombo,
+                    gradeCombo,
+                    sectionCombo,
+                    programCombo,
+                    trackCombo,
+                    strandCombo,
+                    schoolYearCombo,
+                    enrollmentStatusCombo
+            );
+
+            passwordField.setText("");
+        }
+
+        dialog.setContentPane(
+                root
+        );
+
+        dialog.setVisible(
+                true
+        );
+    }
+
+    // =========================================================
+    // ADD FORM ROW
+    // =========================================================
+
+    private void addFormRow(
+            JPanel panel,
+            GridBagConstraints gbc,
+            int row,
+            String label1,
+            java.awt.Component component1,
+            String label2,
+            java.awt.Component component2
+    ) {
+
+        gbc.gridy = row;
+
+        gbc.gridwidth = 1;
+
+        gbc.gridx = 0;
+
+        gbc.weightx = 0;
+
+        panel.add(
+                createFormLabel(
+                        label1
+                ),
+                gbc
+        );
+
+        gbc.gridx = 1;
+
+        gbc.weightx = 1;
+
+        panel.add(
+                component1,
+                gbc
+        );
+
+        gbc.gridx = 2;
+
+        gbc.weightx = 0;
+
+        panel.add(
+                createFormLabel(
+                        label2
+                ),
+                gbc
+        );
+
+        gbc.gridx = 3;
+
+        gbc.weightx = 1;
+
+        panel.add(
+                component2,
+                gbc
+        );
+    }
+
+    // =========================================================
+    // FORM LABEL
+    // =========================================================
+
+    private JLabel createFormLabel(
+            String text
+    ) {
+
+        JLabel label =
+                new JLabel(
+                        text
+                );
+
+        label.setForeground(
+                DARK_TEXT
+        );
+
+        label.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        12
+                )
+        );
+
+        return label;
+    }
+
+    // =========================================================
+    // TEXT FIELD
+    // =========================================================
+
+    private JTextField createTextField() {
+
+        JTextField field =
+                new JTextField();
+
+        field.setPreferredSize(
+                new Dimension(
+                        0,
+                        38
+                )
+        );
+
+        field.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.PLAIN,
+                        13
+                )
+        );
+
+        field.setForeground(
+                DARK_TEXT
+        );
+
+        field.setBackground(
+                WHITE
+        );
+
+        field.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(
+                                BORDER
+                        ),
+                        BorderFactory.createEmptyBorder(
+                                7,
+                                9,
+                                7,
+                                9
+                        )
+                )
+        );
+
+        return field;
+    }
+
+    // =========================================================
+    // COMBO STYLE
+    // =========================================================
+
+    private void styleCombo(
+            JComboBox<?> combo
+    ) {
+
+        combo.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.PLAIN,
+                        13
+                )
+        );
+
+        combo.setBackground(
+                WHITE
+        );
+
+        combo.setForeground(
+                DARK_TEXT
+        );
+
+        combo.setPreferredSize(
+                new Dimension(
+                        0,
+                        38
+                )
+        );
+    }
+
+    // =========================================================
+    // LOOKUP
+    // =========================================================
+
+    private void loadLookup(
+            JComboBox<LookupItem> combo,
+            String sql,
+            String idColumn,
+            String nameColumn
+    ) {
+
+        combo.removeAllItems();
+
+        combo.addItem(
+                new LookupItem(
+                        0,
+                        "-- Select --"
+                )
+        );
+
+        try (
+                Connection connection =
+                        DatabaseConnection.getConnection();
+
+                PreparedStatement statement =
+                        connection.prepareStatement(
+                                sql
+                        );
+
+                ResultSet result =
+                        statement.executeQuery()
+        ) {
+
+            while (
+                    result.next()
+            ) {
+
+                combo.addItem(
+                        new LookupItem(
+                                result.getInt(
+                                        idColumn
+                                ),
+                                result.getString(
+                                        nameColumn
+                                )
+                        )
+                );
+            }
+
+        } catch (
+                SQLException ex
+        ) {
+
+            ex.printStackTrace();
+        }
+    }
+
+    // =========================================================
+    // INSERT STUDENT
+    // =========================================================
+
+    private void insertStudent(
+            JDialog dialog,
+            JTextField schoolStudentIdField,
+            JTextField lrnField,
+            JTextField firstNameField,
+            JTextField middleNameField,
+            JTextField lastNameField,
+            JTextField emailField,
+            JTextField contactField,
+            JTextArea addressArea,
+            JTextField usernameField,
+            JPasswordField passwordField,
+            JComboBox<LookupItem> schoolLevelCombo,
+            JComboBox<LookupItem> gradeCombo,
+            JComboBox<LookupItem> sectionCombo,
+            JComboBox<LookupItem> programCombo,
+            JComboBox<LookupItem> trackCombo,
+            JComboBox<LookupItem> strandCombo,
+            JComboBox<LookupItem> schoolYearCombo,
+            JComboBox<String> enrollmentStatusCombo
+    ) {
+
+        String schoolStudentId =
+                schoolStudentIdField
+                        .getText()
+                        .trim();
+
+        String lrn =
+                lrnField
+                        .getText()
+                        .trim();
+
+        String firstName =
+                firstNameField
+                        .getText()
+                        .trim();
+
+        String middleName =
+                middleNameField
+                        .getText()
+                        .trim();
+
+        String lastName =
+                lastNameField
+                        .getText()
+                        .trim();
+
+        String email =
+                emailField
+                        .getText()
+                        .trim();
+
+        String username =
+                usernameField
+                        .getText()
+                        .trim();
+
+        String password =
+                new String(
+                        passwordField.getPassword()
+                );
+
+        if (
+                schoolStudentId.isEmpty()
+                || lrn.isEmpty()
+                || firstName.isEmpty()
+                || lastName.isEmpty()
+                || email.isEmpty()
+                || username.isEmpty()
+                || password.isEmpty()
+        ) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Please complete all required fields marked with *.",
+                    "Missing Information",
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            return;
+        }
+
+        if (
+                password.length() < 6
+        ) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Password must contain at least 6 characters.",
+                    "Invalid Password",
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            return;
+        }
+
+        if (
+                !email.contains("@")
+        ) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Please enter a valid email address.",
+                    "Invalid Email",
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            return;
+        }
+
+        Connection connection =
+                null;
+
+        try {
+
+            connection =
+                    DatabaseConnection.getConnection();
+
+            connection.setAutoCommit(
+                    false
+            );
+
+            // =================================================
+            // CHECK USERNAME / EMAIL
+            // =================================================
+
+            String checkUserSql =
+                    """
+                    SELECT user_id
+
+                    FROM users
+
+                    WHERE username = ?
+
+                       OR email = ?
+
+                    LIMIT 1
+                    """;
+
+            try (
+                    PreparedStatement check =
+                            connection.prepareStatement(
+                                    checkUserSql
+                            )
+            ) {
+
+                check.setString(
+                        1,
+                        username
+                );
+
+                check.setString(
+                        2,
+                        email
+                );
+
+                try (
+                        ResultSet result =
+                                check.executeQuery()
+                ) {
+
+                    if (
+                            result.next()
+                    ) {
+
+                        throw new SQLException(
+                                "Username or email already exists."
+                        );
+                    }
+                }
+            }
+
+            // =================================================
+            // INSERT USER
+            // =================================================
+
+            String userSql =
+                    """
+                    INSERT INTO users
+                    (
+                        first_name,
+                        middle_name,
+                        last_name,
+                        username,
+                        email,
+                        password_hash,
+                        role,
+                        is_active
+                    )
+
+                    VALUES
+                    (
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        'STUDENT',
+                        1
+                    )
+                    """;
+
+            int userId;
+
+            try (
+                    PreparedStatement statement =
+                            connection.prepareStatement(
+                                    userSql,
+                                    Statement.RETURN_GENERATED_KEYS
+                            )
+            ) {
+
+                statement.setString(
+                        1,
+                        firstName
+                );
+
+                statement.setString(
+                        2,
+                        emptyToNull(
+                                middleName
+                        )
+                );
+
+                statement.setString(
+                        3,
+                        lastName
+                );
+
+                statement.setString(
+                        4,
+                        username
+                );
+
+                statement.setString(
+                        5,
+                        email
+                );
+
+                statement.setString(
+                        6,
+                        hashPassword(
+                                password
+                        )
+                );
+
+                statement.executeUpdate();
+
+                try (
+                        ResultSet keys =
+                                statement.getGeneratedKeys()
+                ) {
+
+                    if (
+                            !keys.next()
+                    ) {
+
+                        throw new SQLException(
+                                "Unable to obtain generated user ID."
+                        );
+                    }
+
+                    userId =
+                            keys.getInt(
+                                    1
+                            );
+                }
+            }
+
+            // =================================================
+            // INSERT STUDENT
+            // =================================================
+
+            String studentSql =
+                    """
+                    INSERT INTO students
+                    (
+                        user_id,
+                        school_student_id,
+                        lrn,
+                        contact_number,
+                        address
+                    )
+
+                    VALUES
+                    (
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        ?
+                    )
+                    """;
+
+            int studentId;
+
+            try (
+                    PreparedStatement statement =
+                            connection.prepareStatement(
+                                    studentSql,
+                                    Statement.RETURN_GENERATED_KEYS
+                            )
+            ) {
+
+                statement.setInt(
+                        1,
+                        userId
+                );
+
+                statement.setString(
+                        2,
+                        schoolStudentId
+                );
+
+                statement.setString(
+                        3,
+                        lrn
+                );
+
+                statement.setString(
+                        4,
+                        emptyToNull(
+                                contactField
+                                        .getText()
+                                        .trim()
+                        )
+                );
+
+                statement.setString(
+                        5,
+                        emptyToNull(
+                                addressArea
+                                        .getText()
+                                        .trim()
+                        )
+                );
+
+                statement.executeUpdate();
+
+                try (
+                        ResultSet keys =
+                                statement.getGeneratedKeys()
+                ) {
+
+                    if (
+                            !keys.next()
+                    ) {
+
+                        throw new SQLException(
+                                "Unable to obtain generated student ID."
+                        );
+                    }
+
+                    studentId =
+                            keys.getInt(
+                                    1
+                            );
+                }
+            }
+
+            // =================================================
+            // INSERT ENROLLMENT IF DATA SELECTED
+            // =================================================
+
+            LookupItem schoolYear =
+                    getSelected(
+                            schoolYearCombo
+                    );
+
+            LookupItem schoolLevel =
+                    getSelected(
+                            schoolLevelCombo
+                    );
+
+            LookupItem grade =
+                    getSelected(
+                            gradeCombo
+                    );
+
+            LookupItem section =
+                    getSelected(
+                            sectionCombo
+                    );
+
+            LookupItem program =
+                    getSelected(
+                            programCombo
+                    );
+
+            LookupItem track =
+                    getSelected(
+                            trackCombo
+                    );
+
+            LookupItem strand =
+                    getSelected(
+                            strandCombo
+                    );
+
+            if (
+                    schoolYear != null
+                    && schoolYear.id > 0
+                    && schoolLevel != null
+                    && schoolLevel.id > 0
+                    && grade != null
+                    && grade.id > 0
+            ) {
+
+                String enrollmentSql =
+                        """
+                        INSERT INTO enrollments
+                        (
+                            student_id,
+                            school_year_id,
+                            school_level_id,
+                            grade_level_id,
+                            section_id,
+                            program_id,
+                            track_id,
+                            strand_id,
+                            enrollment_status
+                        )
+
+                        VALUES
+                        (
+                            ?,
+                            ?,
+                            ?,
+                            ?,
+                            ?,
+                            ?,
+                            ?,
+                            ?,
+                            ?
+                        )
+                        """;
+
+                try (
+                        PreparedStatement statement =
+                                connection.prepareStatement(
+                                        enrollmentSql
+                                )
+                ) {
+
+                    statement.setInt(
+                            1,
+                            studentId
+                    );
+
+                    statement.setInt(
+                            2,
+                            schoolYear.id
+                    );
+
+                    statement.setInt(
+                            3,
+                            schoolLevel.id
+                    );
+
+                    statement.setInt(
+                            4,
+                            grade.id
+                    );
+
+                    setNullableId(
+                            statement,
+                            5,
+                            section
+                    );
+
+                    setNullableId(
+                            statement,
+                            6,
+                            program
+                    );
+
+                    setNullableId(
+                            statement,
+                            7,
+                            track
+                    );
+
+                    setNullableId(
+                            statement,
+                            8,
+                            strand
+                    );
+
+                    statement.setString(
+                            9,
+                            enrollmentStatusCombo
+                                    .getSelectedItem()
+                                    .toString()
+                    );
+
+                    statement.executeUpdate();
+                }
+            }
+
+            connection.commit();
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Student successfully added.\n\n"
+                            + "Full Name: "
+                            + buildFullName(
+                                    firstName,
+                                    middleName,
+                                    lastName
+                            )
+                            + "\nStudent ID: "
+                            + schoolStudentId,
+                    "Student Added",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
+            dialog.dispose();
+
+            loadStudents();
+
+            setStatus(
+                    "New student successfully added."
+            );
+
+        } catch (
+                SQLException ex
+        ) {
+
+            try {
+
+                if (
+                        connection != null
+                ) {
+
+                    connection.rollback();
+                }
+
+            } catch (
+                    SQLException rollbackEx
+            ) {
+
+                rollbackEx.printStackTrace();
+            }
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Unable to add student.\n\n"
+                            + ex.getMessage(),
+                    "Database Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+
+            ex.printStackTrace();
+
+        } finally {
+
+            try {
+
+                if (
+                        connection != null
+                ) {
+
+                    connection.setAutoCommit(
+                            true
+                    );
+
+                    connection.close();
+                }
+
+            } catch (
+                    SQLException closeEx
+            ) {
+
+                closeEx.printStackTrace();
+            }
+        }
+    }
+
+    // =========================================================
+    // LOAD STUDENT INTO EDIT FORM
+    // =========================================================
+
+    private void loadStudentIntoForm(
+            int studentId,
+            JTextField schoolStudentIdField,
+            JTextField lrnField,
+            JTextField firstNameField,
+            JTextField middleNameField,
+            JTextField lastNameField,
+            JTextField emailField,
+            JTextField contactField,
+            JTextArea addressArea,
+            JTextField usernameField,
+            JComboBox<LookupItem> schoolLevelCombo,
+            JComboBox<LookupItem> gradeCombo,
+            JComboBox<LookupItem> sectionCombo,
+            JComboBox<LookupItem> programCombo,
+            JComboBox<LookupItem> trackCombo,
+            JComboBox<LookupItem> strandCombo,
+            JComboBox<LookupItem> schoolYearCombo,
+            JComboBox<String> enrollmentStatusCombo
+    ) {
+
+        String sql =
+                """
+                SELECT
+
+                    s.school_student_id,
+
+                    s.lrn,
+
+                    s.contact_number,
+
+                    s.address,
+
+                    u.first_name,
+
+                    u.middle_name,
+
+                    u.last_name,
+
+                    u.email,
+
+                    u.username,
+
+                    e.school_year_id,
+
+                    e.school_level_id,
+
+                    e.grade_level_id,
+
+                    e.section_id,
+
+                    e.program_id,
+
+                    e.track_id,
+
+                    e.strand_id,
+
+                    e.enrollment_status
+
+                FROM students s
+
+                INNER JOIN users u
+                    ON s.user_id = u.user_id
+
+                LEFT JOIN enrollments e
+                    ON s.student_id = e.student_id
+
+                    AND (
+                        e.school_year_id = (
+                            SELECT
+                                school_year_id
+
+                            FROM school_years
+
+                            WHERE is_current = 1
+
+                            ORDER BY
+                                school_year_id DESC
+
+                            LIMIT 1
+                        )
+
+                        OR e.school_year_id IS NULL
+                    )
+
+                WHERE s.student_id = ?
+
+                LIMIT 1
+                """;
+
+        try (
+                Connection connection =
+                        DatabaseConnection.getConnection();
+
+                PreparedStatement statement =
+                        connection.prepareStatement(
+                                sql
+                        )
+        ) {
+
+            statement.setInt(
+                    1,
+                    studentId
+            );
+
+            try (
+                    ResultSet result =
+                            statement.executeQuery()
+            ) {
+
+                if (
+                        result.next()
+                ) {
+
+                    schoolStudentIdField.setText(
+                            nullSafe(
+                                    result.getString(
+                                            "school_student_id"
+                                    )
+                            )
+                    );
+
+                    lrnField.setText(
+                            nullSafe(
+                                    result.getString(
+                                            "lrn"
+                                    )
+                            )
+                    );
+
+                    firstNameField.setText(
+                            nullSafe(
+                                    result.getString(
+                                            "first_name"
+                                    )
+                            )
+                    );
+
+                    middleNameField.setText(
+                            nullSafe(
+                                    result.getString(
+                                            "middle_name"
+                                    )
+                            )
+                    );
+
+                    lastNameField.setText(
+                            nullSafe(
+                                    result.getString(
+                                            "last_name"
+                                    )
+                            )
+                    );
+
+                    emailField.setText(
+                            nullSafe(
+                                    result.getString(
+                                            "email"
+                                    )
+                            )
+                    );
+
+                    contactField.setText(
+                            nullSafe(
+                                    result.getString(
+                                            "contact_number"
+                                    )
+                            )
+                    );
+
+                    addressArea.setText(
+                            nullSafe(
+                                    result.getString(
+                                            "address"
+                                    )
+                            )
+                    );
+
+                    usernameField.setText(
+                            nullSafe(
+                                    result.getString(
+                                            "username"
+                                    )
+                            )
+                    );
+
+                    selectLookup(
+                            schoolYearCombo,
+                            result.getInt(
+                                    "school_year_id"
+                            )
+                    );
+
+                    selectLookup(
+                            schoolLevelCombo,
+                            result.getInt(
+                                    "school_level_id"
+                            )
+                    );
+
+                    selectLookup(
+                            gradeCombo,
+                            result.getInt(
+                                    "grade_level_id"
+                            )
+                    );
+
+                    selectLookup(
+                            sectionCombo,
+                            result.getInt(
+                                    "section_id"
+                            )
+                    );
+
+                    selectLookup(
+                            programCombo,
+                            result.getInt(
+                                    "program_id"
+                            )
+                    );
+
+                    selectLookup(
+                            trackCombo,
+                            result.getInt(
+                                    "track_id"
+                            )
+                    );
+
+                    selectLookup(
+                            strandCombo,
+                            result.getInt(
+                                    "strand_id"
+                            )
+                    );
+
+                    String enrollmentStatus =
+                            result.getString(
+                                    "enrollment_status"
+                            );
+
+                    if (
+                            enrollmentStatus != null
+                    ) {
+
+                        enrollmentStatusCombo
+                                .setSelectedItem(
+                                        enrollmentStatus
+                                );
+                    }
+                }
+            }
+
+        } catch (
+                SQLException ex
+        ) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Unable to load student information.\n\n"
+                            + ex.getMessage(),
+                    "Database Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+
+            ex.printStackTrace();
+        }
+    }
+
+    // =========================================================
+    // UPDATE STUDENT
+    // =========================================================
+    private void updateStudent(
+            JDialog dialog,
+            int studentId,
+            JTextField schoolStudentIdField,
+            JTextField lrnField,
+            JTextField firstNameField,
+            JTextField middleNameField,
+            JTextField lastNameField,
+            JTextField emailField,
+            JTextField contactField,
+            JTextArea addressArea,
+            JTextField usernameField,
+            JPasswordField passwordField,
+            JComboBox<LookupItem> schoolLevelCombo,
+            JComboBox<LookupItem> gradeCombo,
+            JComboBox<LookupItem> sectionCombo,
+            JComboBox<LookupItem> programCombo,
+            JComboBox<LookupItem> trackCombo,
+            JComboBox<LookupItem> strandCombo,
+            JComboBox<LookupItem> schoolYearCombo,
+            JComboBox<String> enrollmentStatusCombo
+    )
+    {
+
+        String schoolStudentId =
+                schoolStudentIdField
+                        .getText()
+                        .trim();
+
+        String lrn =
+                lrnField
+                        .getText()
+                        .trim();
+
+        String firstName =
+                firstNameField
+                        .getText()
+                        .trim();
+
+        String middleName =
+                middleNameField
+                        .getText()
+                        .trim();
+
+        String lastName =
+                lastNameField
+                        .getText()
+                        .trim();
+
+        String email =
+                emailField
+                        .getText()
+                        .trim();
+
+        String username =
+                usernameField
+                        .getText()
+                        .trim();
+
+        String password =
+                new String(
+                        passwordField.getPassword()
+                );
+
+        if (
+                schoolStudentId.isEmpty()
+                || lrn.isEmpty()
+                || firstName.isEmpty()
+                || lastName.isEmpty()
+                || email.isEmpty()
+                || username.isEmpty()
+        ) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Please complete all required fields marked with *.",
+                    "Missing Information",
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            return;
+        }
+
+        Connection connection =
+                null;
+
+        try {
+
+            connection =
+                    DatabaseConnection.getConnection();
+
+            connection.setAutoCommit(
+                    false
+            );
+
+            // =================================================
+            // FIND USER ID
+            // =================================================
+
+            int userId;
+
+            String findUserSql =
+                    """
+                    SELECT user_id
+
+                    FROM students
+
+                    WHERE student_id = ?
+
+                    LIMIT 1
+                    """;
+
+            try (
+                    PreparedStatement statement =
+                            connection.prepareStatement(
+                                    findUserSql
+                            )
+            ) {
+
+                statement.setInt(
+                        1,
+                        studentId
+                );
+
+                try (
+                        ResultSet result =
+                                statement.executeQuery()
+                ) {
+
+                    if (
+                            !result.next()
+                    ) {
+
+                        throw new SQLException(
+                                "Student record not found."
+                        );
+                    }
+
+                    userId =
+                            result.getInt(
+                                    "user_id"
+                            );
+                }
+            }
+
+            // =================================================
+            // UPDATE USER
+            // =================================================
+
+            String userSql;
+
+            if (
+                    password.isEmpty()
+            ) {
+
+                userSql =
+                        """
+                        UPDATE users
+
+                        SET
+                            first_name = ?,
+                            middle_name = ?,
+                            last_name = ?,
+                            username = ?,
+                            email = ?
+
+                        WHERE user_id = ?
+                        """;
+
+            } else {
+
+                userSql =
+                        """
+                        UPDATE users
+
+                        SET
+                            first_name = ?,
+                            middle_name = ?,
+                            last_name = ?,
+                            username = ?,
+                            email = ?,
+                            password_hash = ?
+
+                        WHERE user_id = ?
+                        """;
+            }
+
+            try (
+                    PreparedStatement statement =
+                            connection.prepareStatement(
+                                    userSql
+                            )
+            ) {
+
+                statement.setString(
+                        1,
+                        firstName
+                );
+
+                statement.setString(
+                        2,
+                        emptyToNull(
+                                middleName
+                        )
+                );
+
+                statement.setString(
+                        3,
+                        lastName
+                );
+
+                statement.setString(
+                        4,
+                        username
+                );
+
+                statement.setString(
+                        5,
+                        email
+                );
+
+                if (
+                        password.isEmpty()
+                ) {
+
+                    statement.setInt(
+                            6,
+                            userId
+                    );
+
+                } else {
+
+                    statement.setString(
+                            6,
+                            hashPassword(
+                                    password
+                            )
+                    );
+
+                    statement.setInt(
+                            7,
+                            userId
+                    );
+                }
+
+                statement.executeUpdate();
+            }
+
+            // =================================================
+            // UPDATE STUDENT
+            // =================================================
+
+            String studentSql =
+                    """
+                    UPDATE students
+
+                    SET
+                        school_student_id = ?,
+                        lrn = ?,
+                        contact_number = ?,
+                        address = ?
+
+                    WHERE student_id = ?
+                    """;
+
+            try (
+                    PreparedStatement statement =
+                            connection.prepareStatement(
+                                    studentSql
+                            )
+            ) {
+
+                statement.setString(
+                        1,
+                        schoolStudentId
+                );
+
+                statement.setString(
+                        2,
+                        lrn
+                );
+
+                statement.setString(
+                        3,
+                        emptyToNull(
+                                contactField
+                                        .getText()
+                                        .trim()
+                        )
+                );
+
+                statement.setString(
+                        4,
+                        emptyToNull(
+                                addressArea
+                                        .getText()
+                                        .trim()
+                        )
+                );
+
+                statement.setInt(
+                        5,
+                        studentId
+                );
+
+                statement.executeUpdate();
+            }
+
+            // =================================================
+            // UPDATE / INSERT ENROLLMENT
+            // =================================================
+
+            LookupItem schoolYear =
+                    getSelected(
+                            schoolYearCombo
+                    );
+
+            LookupItem schoolLevel =
+                    getSelected(
+                            schoolLevelCombo
+                    );
+
+            LookupItem grade =
+                    getSelected(
+                            gradeCombo
+                    );
+
+            LookupItem section =
+                    getSelected(
+                            sectionCombo
+                    );
+
+            LookupItem program =
+                    getSelected(
+                            programCombo
+                    );
+
+            LookupItem track =
+                    getSelected(
+                            trackCombo
+                    );
+
+            LookupItem strand =
+                    getSelected(
+                            strandCombo
+                    );
+
+            if (
+                    schoolYear != null
+                    && schoolYear.id > 0
+                    && schoolLevel != null
+                    && schoolLevel.id > 0
+                    && grade != null
+                    && grade.id > 0
+            ) {
+
+                String checkEnrollment =
+                        """
+                        SELECT enrollment_id
+
+                        FROM enrollments
+
+                        WHERE student_id = ?
+
+                          AND school_year_id = ?
+
+                        LIMIT 1
+                        """;
+
+                int enrollmentId =
+                        0;
+
+                try (
+                        PreparedStatement statement =
+                                connection.prepareStatement(
+                                        checkEnrollment
+                                )
+                ) {
+
+                    statement.setInt(
+                            1,
+                            studentId
+                    );
+
+                    statement.setInt(
+                            2,
+                            schoolYear.id
+                    );
+
+                    try (
+                            ResultSet result =
+                                    statement.executeQuery()
+                    ) {
+
+                        if (
+                                result.next()
+                        ) {
+
+                            enrollmentId =
+                                    result.getInt(
+                                            "enrollment_id"
+                                    );
+                        }
+                    }
+                }
+
+                if (
+                        enrollmentId > 0
+                ) {
+
+                    String updateEnrollment =
+                            """
+                            UPDATE enrollments
+
+                            SET
+                                school_level_id = ?,
+                                grade_level_id = ?,
+                                section_id = ?,
+                                program_id = ?,
+                                track_id = ?,
+                                strand_id = ?,
+                                enrollment_status = ?
+
+                            WHERE enrollment_id = ?
+                            """;
+
+                    try (
+                            PreparedStatement statement =
+                                    connection.prepareStatement(
+                                            updateEnrollment
+                                    )
+                    ) {
+
+                        statement.setInt(
+                                1,
+                                schoolLevel.id
+                        );
+
+                        statement.setInt(
+                                2,
+                                grade.id
+                        );
+
+                        setNullableId(
+                                statement,
+                                3,
+                                section
+                        );
+
+                        setNullableId(
+                                statement,
+                                4,
+                                program
+                        );
+
+                        setNullableId(
+                                statement,
+                                5,
+                                track
+                        );
+
+                        setNullableId(
+                                statement,
+                                6,
+                                strand
+                        );
+
+                        statement.setString(
+                                7,
+                                enrollmentStatusCombo
+                                        .getSelectedItem()
+                                        .toString()
+                        );
+
+                        statement.setInt(
+                                8,
+                                enrollmentId
+                        );
+
+                        statement.executeUpdate();
+                    }
+
+                } else {
+
+                    String insertEnrollment =
+                            """
+                            INSERT INTO enrollments
+                            (
+                                student_id,
+                                school_year_id,
+                                school_level_id,
+                                grade_level_id,
+                                section_id,
+                                program_id,
+                                track_id,
+                                strand_id,
+                                enrollment_status
+                            )
+
+                            VALUES
+                            (
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?
+                            )
+                            """;
+
+                    try (
+                            PreparedStatement statement =
+                                    connection.prepareStatement(
+                                            insertEnrollment
+                                    )
+                    ) {
+
+                        statement.setInt(
+                                1,
+                                studentId
+                        );
+
+                        statement.setInt(
+                                2,
+                                schoolYear.id
+                        );
+
+                        statement.setInt(
+                                3,
+                                schoolLevel.id
+                        );
+
+                        statement.setInt(
+                                4,
+                                grade.id
+                        );
+
+                        setNullableId(
+                                statement,
+                                5,
+                                section
+                        );
+
+                        setNullableId(
+                                statement,
+                                6,
+                                program
+                        );
+
+                        setNullableId(
+                                statement,
+                                7,
+                                track
+                        );
+
+                        setNullableId(
+                                statement,
+                                8,
+                                strand
+                        );
+
+                        statement.setString(
+                                9,
+                                enrollmentStatusCombo
+                                        .getSelectedItem()
+                                        .toString()
+                        );
+
+                        statement.executeUpdate();
+                    }
+                }
+            }
+
+            connection.commit();
+
+            dialog.dispose();
+
+            loadStudents();
+
+            setStatus(
+                    "Student information successfully updated."
+            );
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Student information successfully updated.",
+                    "Update Successful",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
+        } catch (
+                SQLException ex
+        ) {
+
+            try {
+
+                if (
+                        connection != null
+                ) {
+
+                    connection.rollback();
+                }
+
+            } catch (
+                    SQLException rollbackEx
+            ) {
+
+                rollbackEx.printStackTrace();
+            }
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Unable to update student.\n\n"
+                            + ex.getMessage(),
+                    "Database Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+
+            ex.printStackTrace();
+
+        } finally {
+
+            try {
+
+                if (
+                        connection != null
+                ) {
+
+                    connection.setAutoCommit(
+                            true
+                    );
+
+                    connection.close();
+                }
+
+            } catch (
+                    SQLException closeEx
+            ) {
+
+                closeEx.printStackTrace();
+            }
+        }
+    }
+
+    // =========================================================
+    // ACTIVATE / DEACTIVATE
+    // =========================================================
+
+    private void changeStudentStatus() {
+
+        int viewRow =
+                studentTable.getSelectedRow();
+
+        if (
+                viewRow == -1
+        ) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Please select a student first.",
+                    "Student Status",
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            return;
+        }
+
+        int modelRow =
+                studentTable
+                        .convertRowIndexToModel(
+                                viewRow
+                        );
+
+        int studentId =
+                Integer.parseInt(
+                        tableModel
+                                .getValueAt(
+                                        modelRow,
+                                        0
+                                )
+                                .toString()
+                );
+
+        String currentStatus =
+                tableModel
+                        .getValueAt(
+                                modelRow,
+                                15
+                        )
+                        .toString();
+
+        boolean active =
+                "ACTIVE".equalsIgnoreCase(
+                        currentStatus
+                );
+
+        String action =
+                active
+                        ? "deactivate"
+                        : "activate";
+
+        int choice =
+                JOptionPane.showConfirmDialog(
+                        this,
+                        "Are you sure you want to "
+                                + action
+                                + " this student?",
+                        "Change Student Status",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE
+                );
+
+        if (
+                choice != JOptionPane.YES_OPTION
+        ) {
+
+            return;
+        }
+
+        String sql =
+                """
+                UPDATE users
+
+                SET is_active = ?
+
+                WHERE user_id = (
+
+                    SELECT user_id
+
+                    FROM students
+
+                    WHERE student_id = ?
+                )
+                """;
+
+        try (
+                Connection connection =
+                        DatabaseConnection.getConnection();
+
+                PreparedStatement statement =
+                        connection.prepareStatement(
+                                sql
+                        )
+        ) {
+
+            statement.setInt(
+                    1,
+                    active ? 0 : 1
+            );
+
+            statement.setInt(
+                    2,
+                    studentId
+            );
+
+            int affected =
+                    statement.executeUpdate();
+
+            if (
+                    affected > 0
+            ) {
+
+                loadStudents();
+
+                setStatus(
+                        "Student account status updated."
+                );
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Student account successfully "
+                                + (active
+                                ? "deactivated."
+                                : "activated."),
+                        "Success",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+
+            } else {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "No student record was updated.",
+                        "Update Failed",
+                        JOptionPane.WARNING_MESSAGE
+                );
+            }
+
+        } catch (
+                SQLException ex
+        ) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Unable to update student status.\n\n"
+                            + ex.getMessage(),
+                    "Database Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+
+            ex.printStackTrace();
+        }
+    }
+
+    // =========================================================
+    // BACK TO DASHBOARD
+    // =========================================================
+
+    private void backToDashboard() {
+
+        dispose();
+
+        SwingUtilities.invokeLater(
+                () -> {
+
+                    AdminDashboard dashboard =
+                            new AdminDashboard(
+                                    adminUserId
+                            );
+
+                    dashboard.setLocationRelativeTo(
+                            null
+                    );
+
+                    dashboard.setVisible(
+                            true
+                    );
+                }
+        );
+    }
+
+    // =========================================================
+    // SELECT LOOKUP
+    // =========================================================
+
+    private void selectLookup(
+            JComboBox<LookupItem> combo,
+            int id
+    ) {
+
+        if (
+                id <= 0
+        ) {
+
+            combo.setSelectedIndex(
+                    0
+            );
+
+            return;
+        }
+
+        for (
+                int i = 0;
+                i < combo.getItemCount();
+                i++
+        ) {
+
+            LookupItem item =
+                    combo.getItemAt(
+                            i
+                    );
+
+            if (
+                    item != null
+                    && item.id == id
+            ) {
+
+                combo.setSelectedIndex(
+                        i
+                );
+
+                return;
+            }
+        }
+    }
+
+    // =========================================================
+    // GET SELECTED LOOKUP
+    // =========================================================
+
+    private LookupItem getSelected(
+            JComboBox<LookupItem> combo
+    ) {
+
+        Object value =
+                combo.getSelectedItem();
+
+        if (
+                value instanceof LookupItem
+        ) {
+
+            LookupItem item =
+                    (LookupItem) value;
+
+            if (
+                    item.id > 0
+            ) {
+
+                return item;
+            }
+        }
+
+        return null;
+    }
+
+    // =========================================================
+    // NULLABLE ID
+    // =========================================================
+
+    private void setNullableId(
+            PreparedStatement statement,
+            int index,
+            LookupItem item
+    ) throws SQLException {
+
+        if (
+                item == null
+                || item.id <= 0
+        ) {
+
+            statement.setNull(
+                    index,
+                    java.sql.Types.INTEGER
+            );
+
+        } else {
+
+            statement.setInt(
+                    index,
+                    item.id
+            );
+        }
+    }
+
+    // =========================================================
+    // NULL SAFE
+    // =========================================================
+
+    private String nullSafe(
+            String value
+    ) {
+
+        return value == null
+                ? ""
+                : value;
+    }
+
+    // =========================================================
+    // EMPTY TO NULL
+    // =========================================================
+
+    private String emptyToNull(
+            String value
+    ) {
+
+        if (
+                value == null
+                || value.trim().isEmpty()
+        ) {
+
+            return null;
+        }
+
+        return value.trim();
+    }
+
+    // =========================================================
+    // FULL NAME
+    // =========================================================
+
+    private String buildFullName(
+            String first,
+            String middle,
+            String last
+    ) {
+
+        StringBuilder builder =
+                new StringBuilder();
+
+        builder.append(
+                first
+        );
+
+        if (
+                middle != null
+                && !middle.trim().isEmpty()
+        ) {
+
+            builder.append(
+                    " "
+            );
+
+            builder.append(
+                    middle.trim()
+            );
+        }
+
+        builder.append(
+                " "
+        );
+
+        builder.append(
+                last
+        );
+
+        return builder
+                .toString()
+                .trim();
+    }
+
+    // =========================================================
+    // SHA-256 PASSWORD
+    // =========================================================
+
+    private String hashPassword(
+            String password
+    ) {
+
+        try {
+
+            MessageDigest digest =
+                    MessageDigest.getInstance(
+                            "SHA-256"
+                    );
+
+            byte[] hash =
+                    digest.digest(
+                            password.getBytes(
+                                    StandardCharsets.UTF_8
+                            )
+                    );
+
+            StringBuilder hex =
+                    new StringBuilder();
+
+            for (
+                    byte b : hash
+            ) {
+
+                hex.append(
+                        String.format(
+                                "%02x",
+                                b
+                        )
+                );
+            }
+
+            return hex.toString();
+
+        } catch (
+                Exception ex
+        ) {
+
+            throw new RuntimeException(
+                    "Unable to hash password.",
+                    ex
+            );
+        }
+    }
+
+    // =========================================================
+    // STATUS
+    // =========================================================
+
+    private void setStatus(
+            String message
+    ) {
+
+        if (
+                statusLabel != null
+        ) {
+
+            statusLabel.setText(
+                    message
+            );
+        }
+    }
+
+    // =========================================================
+    // PRIMARY BUTTON
+    // =========================================================
+
+    private JButton createPrimaryButton(
+            String text
+    ) {
+
+        JButton button =
+                new JButton(
+                        text
+                );
+
+        button.setBackground(
+                ROYAL_BLUE
+        );
+
+        button.setForeground(
+                WHITE
+        );
+
+        button.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        12
+                )
+        );
+
+        button.setFocusPainted(
+                false
+        );
+
+        button.setBorder(
+                BorderFactory.createEmptyBorder(
+                        10,
+                        17,
+                        10,
+                        17
+                )
+        );
+
+        button.setCursor(
+                new Cursor(
+                        Cursor.HAND_CURSOR
+                )
+        );
+
+        button.addMouseListener(
+                new MouseAdapter() {
+
+                    @Override
+                    public void mouseEntered(
+                            MouseEvent e
+                    ) {
+
+                        button.setBackground(
+                                NAVY
+                        );
+                    }
+
+                    @Override
+                    public void mouseExited(
+                            MouseEvent e
+                    ) {
+
+                        button.setBackground(
+                                ROYAL_BLUE
+                        );
+                    }
+                }
+        );
+
+        return button;
+    }
+
+    // =========================================================
+    // GOLD BUTTON
+    // =========================================================
+
+    private JButton createGoldButton(
+            String text
+    ) {
+
+        JButton button =
+                new JButton(
+                        text
+                );
+
+        button.setBackground(
+                GOLD
+        );
+
+        button.setForeground(
+                NAVY
+        );
+
+        button.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        12
+                )
+        );
+
+        button.setFocusPainted(
+                false
+        );
+
+        button.setBorder(
+                BorderFactory.createEmptyBorder(
+                        10,
+                        17,
+                        10,
+                        17
+                )
+        );
+
+        button.setCursor(
+                new Cursor(
+                        Cursor.HAND_CURSOR
+                )
+        );
+
+        button.addMouseListener(
+                new MouseAdapter() {
+
+                    @Override
+                    public void mouseEntered(
+                            MouseEvent e
+                    ) {
+
+                        button.setBackground(
+                                WHITE
+                        );
+                    }
+
+                    @Override
+                    public void mouseExited(
+                            MouseEvent e
+                    ) {
+
+                        button.setBackground(
+                                GOLD
+                        );
+                    }
+                }
+        );
+
+        return button;
+    }
+
+    // =========================================================
+    // SECONDARY BUTTON
+    // =========================================================
+
+    private JButton createSecondaryButton(
+            String text
+    ) {
+
+        JButton button =
+                new JButton(
+                        text
+                );
+
+        button.setBackground(
+                WHITE
+        );
+
+        button.setForeground(
+                ROYAL_BLUE
+        );
+
+        button.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        12
+                )
+        );
+
+        button.setFocusPainted(
+                false
+        );
+
+        button.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(
+                                WHITE
+                        ),
+                        BorderFactory.createEmptyBorder(
+                                9,
+                                16,
+                                9,
+                                16
+                        )
+                )
+        );
+
+        button.setCursor(
+                new Cursor(
+                        Cursor.HAND_CURSOR
+                )
+        );
+
+        button.addMouseListener(
+                new MouseAdapter() {
+
+                    @Override
+                    public void mouseEntered(
+                            MouseEvent e
+                    ) {
+
+                        button.setBackground(
+                                LIGHT_BLUE
+                        );
+
+                        button.setForeground(
+                                NAVY
+                        );
+                    }
+
+                    @Override
+                    public void mouseExited(
+                            MouseEvent e
+                    ) {
+
+                        button.setBackground(
+                                WHITE
+                        );
+
+                        button.setForeground(
+                                ROYAL_BLUE
+                        );
+                    }
+                }
+        );
+
+        return button;
+    }
+
+    // =========================================================
+    // STATUS BUTTON
+    // =========================================================
+
+    private JButton createStatusButton() {
+
+        JButton button =
+                new JButton(
+                        "Activate / Deactivate"
+                );
+
+        button.setBackground(
+                WHITE
+        );
+
+        button.setForeground(
+                NAVY
+        );
+
+        button.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        12
+                )
+        );
+
+        button.setFocusPainted(
+                false
+        );
+
+        button.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(
+                                WHITE
+                        ),
+                        BorderFactory.createEmptyBorder(
+                                9,
+                                15,
+                                9,
+                                15
+                        )
+                )
+        );
+
+        button.setCursor(
+                new Cursor(
+                        Cursor.HAND_CURSOR
+                )
+        );
+
+        button.addMouseListener(
+                new MouseAdapter() {
+
+                    @Override
+                    public void mouseEntered(
+                            MouseEvent e
+                    ) {
+
+                        button.setBackground(
+                                LIGHT_BLUE
+                        );
+                    }
+
+                    @Override
+                    public void mouseExited(
+                            MouseEvent e
+                    ) {
+
+                        button.setBackground(
+                                WHITE
+                        );
+                    }
+                }
+        );
+
+        return button;
+    }
+
+    // =========================================================
+    // BACK BUTTON
+    // =========================================================
+
+    private JButton createBackButton(
+            String text
+    ) {
+
+        JButton button =
+                new JButton(
+                        text
+                );
+
+        button.setBackground(
+                GOLD
+        );
+
+        button.setForeground(
+                NAVY
+        );
+
+        button.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        12
+                )
+        );
+
+        button.setFocusPainted(
+                false
+        );
+
+        button.setBorder(
+                BorderFactory.createEmptyBorder(
+                        9,
+                        17,
+                        9,
+                        17
+                )
+        );
+
+        button.setCursor(
+                new Cursor(
+                        Cursor.HAND_CURSOR
+                )
+        );
+
+        button.addMouseListener(
+                new MouseAdapter() {
+
+                    @Override
+                    public void mouseEntered(
+                            MouseEvent e
+                    ) {
+
+                        button.setBackground(
+                                WHITE
+                        );
+                    }
+
+                    @Override
+                    public void mouseExited(
+                            MouseEvent e
+                    ) {
+
+                        button.setBackground(
+                                GOLD
+                        );
+                    }
+                }
+        );
+
+        button.addActionListener(
+                e -> backToDashboard()
+        );
+
+        return button;
+    }
+
+    // =========================================================
+    // ACTIONS
+    // =========================================================
+
+    private void initializeActions() {
+
+        searchButton.addActionListener(
+                e -> performSearch()
+        );
+
+        refreshButton.addActionListener(
+                e -> refreshStudents()
+        );
+
+        addButton.addActionListener(
+                e -> addStudent()
+        );
+
+        editButton.addActionListener(
+                e -> editSelectedStudent()
+        );
+
+        statusButton.addActionListener(
+                e -> changeStudentStatus()
+        );
+
+        searchField.addKeyListener(
+                new KeyAdapter() {
+
+                    @Override
+                    public void keyPressed(
+                            KeyEvent e
+                    ) {
+
+                        if (
+                                e.getKeyCode()
+                                        == KeyEvent.VK_ENTER
+                        ) {
+
+                            performSearch();
+                        }
+                    }
+                }
+        );
+    }
+
+    // =========================================================
+    // LOOKUP ITEM
+    // =========================================================
+
+    private static class LookupItem {
+
+        private final int id;
+
+        private final String name;
+
+        public LookupItem(
+                int id,
+                String name
+        ) {
+
+            this.id = id;
+
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+
+            return name;
+        }
+    }
+
+    // =========================================================
+    // MAIN
+    // =========================================================
+
+    public static void main(
+            String[] args
+    ) {
+
+        SwingUtilities.invokeLater(
+                () -> {
+
+                    StudentManagement frame =
+                            new StudentManagement(
+                                    0
+                            );
+
+                    frame.setLocationRelativeTo(
+                            null
+                    );
+
+                    frame.setVisible(
+                            true
+                    );
+                }
+        );
+    }
+}
