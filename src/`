@@ -1,0 +1,4650 @@
+
+package com.lnhs.attendance.frame.admin;
+
+import com.lnhs.attendance.model.Section;
+import com.lnhs.attendance.service.SectionService;
+import com.lnhs.attendance.util.LogoLoader;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.Insets;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
+
+/**
+ * ============================================================
+ * LIBUNGAN NATIONAL HIGH SCHOOL
+ * LNHS ATTENDANCE MANAGEMENT SYSTEM
+ *
+ * SectionManagement.java
+ *
+ * PACKAGE:
+ * com.lnhs.attendance.frame.admin
+ *
+ * DATABASE:
+ * lnhs_attendance
+ *
+ * PURPOSE:
+ * Administrative management of school sections.
+ *
+ * SECTION TABLE:
+ *
+ * section_id
+ * school_year_id
+ * school_level_id
+ * grade_level_id
+ * program_id
+ * track_id
+ * strand_id
+ * section_name
+ * room_name
+ * adviser_teacher_id
+ * is_active
+ * created_at
+ *
+ * ARCHITECTURE:
+ *
+ * SectionManagement
+ *       |
+ *       v
+ * SectionService
+ *       |
+ *       v
+ * SectionDAO
+ *       |
+ *       v
+ * sections
+ *
+ * ============================================================
+ */
+public class SectionManagement extends JFrame {
+
+    private static final long serialVersionUID = 1L;
+
+    // ============================================================
+    // LNHS PROFESSIONAL COLORS
+    // ============================================================
+
+    private static final Color NAVY =
+            Color.decode("#12355B");
+
+    private static final Color ROYAL_BLUE =
+            Color.decode("#1E5AA8");
+
+    private static final Color GOLD =
+            Color.decode("#F4B942");
+
+    private static final Color LIGHT_GRAY =
+            Color.decode("#F5F7FA");
+
+    private static final Color WHITE =
+            Color.WHITE;
+
+    private static final Color DARK_TEXT =
+            Color.decode("#263238");
+
+    private static final Color MUTED_TEXT =
+            Color.decode("#607D8B");
+
+    private static final Color BORDER =
+            Color.decode("#D9E0E6");
+
+    private static final Color LIGHT_BLUE =
+            Color.decode("#EAF2FB");
+
+    private static final Color INPUT_BACKGROUND =
+            Color.decode("#F8FAFC");
+
+    private static final Color INPUT_BORDER =
+            Color.decode("#B8C4D0");
+
+    private static final Color SELECTED_BLUE =
+            Color.decode("#DCEBFA");
+
+    private static final Color SUCCESS =
+            Color.decode("#2E7D32");
+
+    private static final Color DANGER =
+            Color.decode("#C62828");
+
+    private static final Color WARNING =
+            Color.decode("#EF9B0F");
+
+    // ============================================================
+    // SERVICE
+    // ============================================================
+
+    private SectionService sectionService;
+
+    // ============================================================
+    // USER
+    // ============================================================
+
+    private int adminUserId;
+
+    // ============================================================
+    // MAIN PANELS
+    // ============================================================
+
+    private JPanel mainPanel;
+
+    private JPanel contentPanel;
+
+    // ============================================================
+    // FORM CONTROLS
+    // ============================================================
+
+    private JTextField sectionNameField;
+
+    private JTextField roomNameField;
+
+    private JTextField searchField;
+
+    private JComboBox<IdNameItem> schoolYearCombo;
+
+    private JComboBox<IdNameItem> schoolLevelCombo;
+
+    private JComboBox<IdNameItem> gradeLevelCombo;
+
+    private JComboBox<IdNameItem> programCombo;
+
+    private JComboBox<IdNameItem> trackCombo;
+
+    private JComboBox<IdNameItem> strandCombo;
+
+    private JComboBox<IdNameItem> adviserCombo;
+
+    private JComboBox<String> statusCombo;
+
+    // ============================================================
+    // TABLE
+    // ============================================================
+
+    private JTable sectionTable;
+
+    private DefaultTableModel tableModel;
+
+    private int selectedSectionId = -1;
+
+    // ============================================================
+    // LABELS
+    // ============================================================
+
+    private JLabel recordCountLabel;
+
+    private JLabel formModeLabel;
+
+    // ============================================================
+    // BUTTONS
+    // ============================================================
+
+    private JButton saveButton;
+
+    private JButton updateButton;
+
+    private JButton deleteButton;
+
+    private JButton clearButton;
+
+    // ============================================================
+    // CONSTRUCTORS
+    // =====================```=======================================
+
+    public SectionManagement(int adminUserId) {
+
+        this.adminUserId = adminUserId;
+
+        initializeService();
+        initializeFrame();
+        initializeUI();
+        loadSections();
+    }
+
+    public SectionManagement() {
+
+        this(0);
+    }
+
+    // ============================================================
+    // SERVICE
+    // ============================================================
+
+    private void initializeService() {
+
+        try {
+
+            sectionService =
+                    new SectionService();
+
+        } catch (Exception ex) {
+
+            sectionService = null;
+
+            System.err.println(
+                    "SectionService initialization error: "
+                            + ex.getMessage()
+            );
+        }
+    }
+
+    // ============================================================
+    // FRAME
+    // ============================================================
+
+    private void initializeFrame() {
+
+        setTitle(
+                "LNHS Attendance Management System - Section Management"
+        );
+
+        setSize(
+                1380,
+                850
+        );
+
+        setMinimumSize(
+                new Dimension(
+                        1150,
+                        720
+                )
+        );
+
+        setResizable(true);
+
+        setDefaultCloseOperation(
+                JFrame.DISPOSE_ON_CLOSE
+        );
+
+        setLocationRelativeTo(null);
+    }
+
+    // ============================================================
+    // INITIALIZE UI
+    // ============================================================
+
+    private void initializeUI() {
+
+        mainPanel =
+                new JPanel(
+                        new BorderLayout()
+                );
+
+        mainPanel.setBackground(
+                LIGHT_GRAY
+        );
+
+        // ========================================================
+        // SIDEBAR
+        // ========================================================
+
+        mainPanel.add(
+                createSidebar(),
+                BorderLayout.WEST
+        );
+
+        // ========================================================
+        // CONTENT
+        // ========================================================
+
+        contentPanel =
+                new JPanel(
+                        new BorderLayout()
+                );
+
+        contentPanel.setBackground(
+                LIGHT_GRAY
+        );
+
+        contentPanel.add(
+                createHeader(),
+                BorderLayout.NORTH
+        );
+
+        contentPanel.add(
+                createMainContent(),
+                BorderLayout.CENTER
+        );
+
+        mainPanel.add(
+                contentPanel,
+                BorderLayout.CENTER
+        );
+
+        setContentPane(mainPanel);
+    }
+
+    // ============================================================
+    // SIDEBAR
+    // ============================================================
+
+    private JPanel createSidebar() {
+
+        JPanel sidebar =
+                new JPanel(
+                        new BorderLayout()
+                );
+
+        sidebar.setBackground(
+                NAVY
+        );
+
+        sidebar.setPreferredSize(
+                new Dimension(
+                        245,
+                        850
+                )
+        );
+
+        // ========================================================
+        // BRAND
+        // ========================================================
+
+        JPanel brandPanel =
+                new JPanel(
+                        new GridBagLayout()
+                );
+
+        brandPanel.setBackground(
+                NAVY
+        );
+
+        GridBagConstraints gbc =
+                new GridBagConstraints();
+
+        gbc.gridx = 0;
+        gbc.weightx = 1;
+        gbc.fill =
+                GridBagConstraints.HORIZONTAL;
+
+        ImageIcon logoIcon =
+                LogoLoader.loadLogo(
+                        82,
+                        82
+                );
+
+        JLabel logoLabel;
+
+        if (logoIcon != null) {
+
+            logoLabel =
+                    new JLabel(
+                            logoIcon
+                    );
+
+        } else {
+
+            logoLabel =
+                    new JLabel(
+                            "LNHS",
+                            SwingConstants.CENTER
+                    );
+
+            logoLabel.setForeground(
+                    GOLD
+            );
+
+            logoLabel.setFont(
+                    new Font(
+                            "Segoe UI",
+                            Font.BOLD,
+                            30
+                    )
+            );
+        }
+
+        logoLabel.setHorizontalAlignment(
+                SwingConstants.CENTER
+        );
+
+        gbc.gridy = 0;
+
+        gbc.insets =
+                new Insets(
+                        24,
+                        10,
+                        8,
+                        10
+                );
+
+        brandPanel.add(
+                logoLabel,
+                gbc
+        );
+
+        JLabel schoolName =
+                new JLabel(
+                        "<html>"
+                                + "<div style='text-align:center;'>"
+                                + "<b>LIBUNGAN NATIONAL<br>"
+                                + "HIGH SCHOOL</b>"
+                                + "</div>"
+                                + "</html>",
+                        SwingConstants.CENTER
+                );
+
+        schoolName.setForeground(
+                WHITE
+        );
+
+        schoolName.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        15
+                )
+        );
+
+        gbc.gridy = 1;
+
+        gbc.insets =
+                new Insets(
+                        4,
+                        10,
+                        4,
+                        10
+                );
+
+        brandPanel.add(
+                schoolName,
+                gbc
+        );
+
+        JLabel systemName =
+                new JLabel(
+                        "ATTENDANCE MANAGEMENT",
+                        SwingConstants.CENTER
+                );
+
+        systemName.setForeground(
+                GOLD
+        );
+
+        systemName.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        10
+                )
+        );
+
+        gbc.gridy = 2;
+
+        gbc.insets =
+                new Insets(
+                        4,
+                        10,
+                        20,
+                        10
+                );
+
+        brandPanel.add(
+                systemName,
+                gbc
+        );
+
+        sidebar.add(
+                brandPanel,
+                BorderLayout.NORTH
+        );
+
+        // ========================================================
+        // SIDEBAR MENU
+        // ========================================================
+
+        JPanel menuPanel =
+                new JPanel(
+                        new GridLayout(
+                                0,
+                                1,
+                                0,
+                                4
+                        )
+                );
+
+        menuPanel.setBackground(
+                NAVY
+        );
+
+        menuPanel.setBorder(
+                new EmptyBorder(
+                        5,
+                        10,
+                        10,
+                        10
+                )
+        );
+
+        menuPanel.add(
+                createSidebarButton(
+                        "Dashboard",
+                        false,
+                        e -> openFrame(
+                                "com.lnhs.attendance.frame.admin.AdminDashboard"
+                        )
+                )
+        );
+
+        menuPanel.add(
+                createSidebarLabel(
+                        "PEOPLE"
+                )
+        );
+
+        menuPanel.add(
+                createSidebarButton(
+                        "Student Management",
+                        false,
+                        e -> openFrame(
+                                "com.lnhs.attendance.frame.admin.StudentManagement"
+                        )
+                )
+        );
+
+        menuPanel.add(
+                createSidebarButton(
+                        "Teacher Management",
+                        false,
+                        e -> openFrame(
+                                "com.lnhs.attendance.frame.admin.TeacherManagement"
+                        )
+                )
+        );
+
+        menuPanel.add(
+                createSidebarButton(
+                        "Employee Management",
+                        false,
+                        e -> openFrame(
+                                "com.lnhs.attendance.frame.admin.EmployeeManagement"
+                        )
+                )
+        );
+
+        menuPanel.add(
+                createSidebarLabel(
+                        "QR & ATTENDANCE"
+                )
+        );
+
+        menuPanel.add(
+                createSidebarButton(
+                        "QR Code Management",
+                        false,
+                        e -> openFrame(
+                                "com.lnhs.attendance.frame.admin.QRCodeManagement"
+                        )
+                )
+        );
+
+        menuPanel.add(
+                createSidebarButton(
+                        "Gate Attendance",
+                        false,
+                        e -> openFrame(
+                                "com.lnhs.attendance.frame.admin.GateAttendance"
+                        )
+                )
+        );
+
+        menuPanel.add(
+                createSidebarButton(
+                        "Gate Exit",
+                        false,
+                        e -> openFrame(
+                                "com.lnhs.attendance.frame.admin.GateExit"
+                        )
+                )
+        );
+
+        menuPanel.add(
+                createSidebarLabel(
+                        "SCHOOL"
+                )
+        );
+
+        menuPanel.add(
+                createSidebarButton(
+                        "School Year",
+                        false,
+                        e -> openFrame(
+                                "com.lnhs.attendance.frame.admin.SchoolYearManagement"
+                        )
+                )
+        );
+
+        menuPanel.add(
+                createSidebarButton(
+                        "Section Management",
+                        true,
+                        null
+                )
+        );
+
+        menuPanel.add(
+                createSidebarButton(
+                        "Schedule Management",
+                        false,
+                        e -> openFrame(
+                                "com.lnhs.attendance.frame.admin.ScheduleManagement"
+                        )
+                )
+        );
+
+        sidebar.add(
+                menuPanel,
+                BorderLayout.CENTER
+        );
+
+        // ========================================================
+        // BOTTOM
+        // ========================================================
+
+        JPanel bottomPanel =
+                new JPanel(
+                        new GridLayout(
+                                2,
+                                1,
+                                0,
+                                5
+                        )
+                );
+
+        bottomPanel.setBackground(
+                NAVY
+        );
+
+        bottomPanel.setBorder(
+                new EmptyBorder(
+                        10,
+                        10,
+                        15,
+                        10
+                )
+        );
+
+        JButton profileButton =
+                createSidebarButton(
+                        "My Profile",
+                        false,
+                        e -> openFrame(
+                                "com.lnhs.attendance.frame.admin.AdminProfile"
+                        )
+                );
+
+        JButton backButton =
+                createSidebarButton(
+                        "Back to Dashboard",
+                        false,
+                        e -> returnToDashboard()
+                );
+
+        bottomPanel.add(
+                profileButton
+        );
+
+        bottomPanel.add(
+                backButton
+        );
+
+        sidebar.add(
+                bottomPanel,
+                BorderLayout.SOUTH
+        );
+
+        return sidebar;
+    }
+
+    // ============================================================
+    // SIDEBAR LABEL
+    // ============================================================
+
+    private JLabel createSidebarLabel(
+            String text
+    ) {
+
+        JLabel label =
+                new JLabel(
+                        text
+                );
+
+        label.setForeground(
+                GOLD
+        );
+
+        label.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        10
+                )
+        );
+
+        label.setBorder(
+                new EmptyBorder(
+                        11,
+                        10,
+                        3,
+                        5
+                )
+        );
+
+        return label;
+    }
+
+    // ============================================================
+    // SIDEBAR BUTTON
+    // ============================================================
+
+    private JButton createSidebarButton(
+            String text,
+            boolean selected,
+            java.awt.event.ActionListener listener
+    ) {
+
+        JButton button =
+                new JButton(
+                        text
+                );
+
+        button.setHorizontalAlignment(
+                SwingConstants.LEFT
+        );
+
+        button.setPreferredSize(
+                new Dimension(
+                        220,
+                        38
+                )
+        );
+
+        button.setBackground(
+                selected
+                        ? ROYAL_BLUE
+                        : NAVY
+        );
+
+        button.setForeground(
+                selected
+                        ? GOLD
+                        : WHITE
+        );
+
+        button.setFont(
+                new Font(
+                        "Segoe UI",
+                        selected
+                                ? Font.BOLD
+                                : Font.PLAIN,
+                        13
+                )
+        );
+
+        button.setFocusPainted(
+                false
+        );
+
+        button.setBorderPainted(
+                false
+        );
+
+        button.setContentAreaFilled(
+                true
+        );
+
+        button.setCursor(
+                new Cursor(
+                        Cursor.HAND_CURSOR
+                )
+        );
+
+        button.setBorder(
+                new EmptyBorder(
+                        5,
+                        12,
+                        5,
+                        5
+                )
+        );
+
+        if (listener != null) {
+
+            button.addActionListener(
+                    listener
+            );
+        }
+
+        button.addMouseListener(
+                new MouseAdapter() {
+
+                    @Override
+                    public void mouseEntered(
+                            MouseEvent e
+                    ) {
+
+                        if (!selected) {
+
+                            button.setBackground(
+                                    ROYAL_BLUE
+                            );
+
+                            button.setForeground(
+                                    WHITE
+                            );
+                        }
+                    }
+
+                    @Override
+                    public void mouseExited(
+                            MouseEvent e
+                    ) {
+
+                        if (!selected) {
+
+                            button.setBackground(
+                                    NAVY
+                            );
+
+                            button.setForeground(
+                                    WHITE
+                            );
+                        }
+                    }
+                }
+        );
+
+        return button;
+    }
+
+    // ============================================================
+    // HEADER
+    // ============================================================
+
+    private JPanel createHeader() {
+
+        JPanel header =
+                new JPanel(
+                        new BorderLayout()
+                );
+
+        header.setBackground(
+                WHITE
+        );
+
+        header.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createMatteBorder(
+                                0,
+                                0,
+                                1,
+                                0,
+                                BORDER
+                        ),
+                        new EmptyBorder(
+                                18,
+                                25,
+                                18,
+                                25
+                        )
+                )
+        );
+
+        JPanel titlePanel =
+                new JPanel(
+                        new GridLayout(
+                                2,
+                                1,
+                                0,
+                                3
+                        )
+                );
+
+        titlePanel.setOpaque(
+                false
+        );
+
+        JLabel title =
+                new JLabel(
+                        "Section Management"
+                );
+
+        title.setForeground(
+                NAVY
+        );
+
+        title.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        25
+                )
+        );
+
+        JLabel subtitle =
+                new JLabel(
+                        "Manage school sections, rooms, grade levels and advisers"
+                );
+
+        subtitle.setForeground(
+                MUTED_TEXT
+        );
+
+        subtitle.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.PLAIN,
+                        12
+                )
+        );
+
+        titlePanel.add(
+                title
+        );
+
+        titlePanel.add(
+                subtitle
+        );
+
+        header.add(
+                titlePanel,
+                BorderLayout.WEST
+        );
+
+        JPanel rightPanel =
+                new JPanel(
+                        new FlowLayout(
+                                FlowLayout.RIGHT,
+                                8,
+                                5
+                        )
+                );
+
+        rightPanel.setOpaque(
+                false
+        );
+
+        JLabel adminLabel =
+                new JLabel(
+                        "ADMIN"
+                );
+
+        adminLabel.setForeground(
+                ROYAL_BLUE
+        );
+
+        adminLabel.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        11
+                )
+        );
+
+        rightPanel.add(
+                adminLabel
+        );
+
+        header.add(
+                rightPanel,
+                BorderLayout.EAST
+        );
+
+        return header;
+    }
+
+    // ============================================================
+    // MAIN CONTENT
+    // ============================================================
+
+    private JPanel createMainContent() {
+
+        JPanel outer =
+                new JPanel(
+                        new BorderLayout(
+                                0,
+                                15
+                        )
+                );
+
+        outer.setBackground(
+                LIGHT_GRAY
+        );
+
+        outer.setBorder(
+                new EmptyBorder(
+                        20,
+                        25,
+                        20,
+                        25
+                )
+        );
+
+        // ========================================================
+        // TOP TOOLBAR
+        // ========================================================
+
+        outer.add(
+                createToolbar(),
+                BorderLayout.NORTH
+        );
+
+        // ========================================================
+        // CENTER
+        // ========================================================
+
+        JPanel center =
+                new JPanel(
+                        new BorderLayout(
+                                18,
+                                0
+                        )
+                );
+
+        center.setOpaque(
+                false
+        );
+
+        // ========================================================
+        // FORM
+        // ========================================================
+
+        center.add(
+                createFormPanel(),
+                BorderLayout.WEST
+        );
+
+        // ========================================================
+        // TABLE
+        // ========================================================
+
+        center.add(
+                createTablePanel(),
+                BorderLayout.CENTER
+        );
+
+        outer.add(
+                center,
+                BorderLayout.CENTER
+        );
+
+        return outer;
+    }
+
+    // ============================================================
+    // TOOLBAR
+    // ============================================================
+
+    private JPanel createToolbar() {
+
+        JPanel toolbar =
+                new JPanel(
+                        new BorderLayout()
+                );
+
+        toolbar.setBackground(
+                WHITE
+        );
+
+        toolbar.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(
+                                BORDER
+                        ),
+                        new EmptyBorder(
+                                12,
+                                15,
+                                12,
+                                15
+                        )
+                )
+        );
+
+        JPanel left =
+                new JPanel(
+                        new FlowLayout(
+                                FlowLayout.LEFT,
+                                8,
+                                0
+                        )
+                );
+
+        left.setOpaque(
+                false
+        );
+
+        JLabel searchLabel =
+                new JLabel(
+                        "Search Sections:"
+                );
+
+        searchLabel.setForeground(
+                DARK_TEXT
+        );
+
+        searchLabel.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        12
+                )
+        );
+
+        searchField =
+                createTextField(
+                        250
+                );
+
+        searchField.setToolTipText(
+                "Search by section name or room"
+        );
+
+        JButton searchButton =
+                createPrimaryButton(
+                        "Search"
+                );
+
+        searchButton.addActionListener(
+                e -> loadSections()
+        );
+
+        JButton refreshButton =
+                createSecondaryButton(
+                        "Refresh"
+                );
+
+        refreshButton.addActionListener(
+                e -> {
+
+                    searchField.setText("");
+
+                    loadSections();
+
+                    clearForm();
+                }
+        );
+
+        left.add(
+                searchLabel
+        );
+
+        left.add(
+                searchField
+        );
+
+        left.add(
+                searchButton
+        );
+
+        left.add(
+                refreshButton
+        );
+
+        toolbar.add(
+                left,
+                BorderLayout.WEST
+        );
+
+        JPanel right =
+                new JPanel(
+                        new FlowLayout(
+                                FlowLayout.RIGHT,
+                                8,
+                                0
+                        )
+                );
+
+        right.setOpaque(
+                false
+        );
+
+        JLabel statusLabel =
+                new JLabel(
+                        "Status:"
+                );
+
+        statusLabel.setForeground(
+                MUTED_TEXT
+        );
+
+        statusLabel.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        12
+                )
+        );
+
+        statusCombo =
+                new JComboBox<>(
+                        new String[] {
+                                "ALL",
+                                "ACTIVE",
+                                "INACTIVE"
+                        }
+                );
+
+        styleComboBox(
+                statusCombo
+        );
+
+        statusCombo.addActionListener(
+                e -> loadSections()
+        );
+
+        recordCountLabel =
+                new JLabel(
+                        "0 sections"
+                );
+
+        recordCountLabel.setForeground(
+                ROYAL_BLUE
+        );
+
+        recordCountLabel.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        12
+                )
+        );
+
+        right.add(
+                statusLabel
+        );
+
+        right.add(
+                statusCombo
+        );
+
+        right.add(
+                recordCountLabel
+        );
+
+        toolbar.add(
+                right,
+                BorderLayout.EAST
+        );
+
+        return toolbar;
+    }
+
+    // ============================================================
+    // FORM PANEL
+    // ============================================================
+
+    private JPanel createFormPanel() {
+
+        JPanel outer =
+                new JPanel(
+                        new BorderLayout()
+                );
+
+        outer.setBackground(
+                WHITE
+        );
+
+        outer.setPreferredSize(
+                new Dimension(
+                        390,
+                        0
+                )
+        );
+
+        outer.setBorder(
+                BorderFactory.createLineBorder(
+                        BORDER
+                )
+        );
+
+        // ========================================================
+        // FORM HEADER
+        // ========================================================
+
+        JPanel header =
+                new JPanel(
+                        new BorderLayout()
+                );
+
+        header.setBackground(
+                NAVY
+        );
+
+        header.setBorder(
+                new EmptyBorder(
+                        14,
+                        18,
+                        14,
+                        18
+                )
+        );
+
+        JLabel title =
+                new JLabel(
+                        "SECTION INFORMATION"
+                );
+
+        title.setForeground(
+                WHITE
+        );
+
+        title.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        15
+                )
+        );
+
+        formModeLabel =
+                new JLabel(
+                        "NEW SECTION"
+                );
+
+        formModeLabel.setForeground(
+                GOLD
+        );
+
+        formModeLabel.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        10
+                )
+        );
+
+        header.add(
+                title,
+                BorderLayout.WEST
+        );
+
+        header.add(
+                formModeLabel,
+                BorderLayout.EAST
+        );
+
+        outer.add(
+                header,
+                BorderLayout.NORTH
+        );
+
+        // ========================================================
+        // FORM BODY
+        // ========================================================
+
+        JPanel form =
+                new JPanel(
+                        new GridBagLayout()
+                );
+
+        form.setBackground(
+                WHITE
+        );
+
+        form.setBorder(
+                new EmptyBorder(
+                        18,
+                        18,
+                        18,
+                        18
+                )
+        );
+
+        GridBagConstraints gbc =
+                new GridBagConstraints();
+
+        gbc.gridx = 0;
+        gbc.weightx = 1;
+        gbc.fill =
+                GridBagConstraints.HORIZONTAL;
+
+        gbc.insets =
+                new Insets(
+                        0,
+                        0,
+                        5,
+                        0
+                );
+
+        int row = 0;
+
+        // ========================================================
+        // SCHOOL YEAR
+        // ========================================================
+
+        gbc.gridy = row++;
+
+        form.add(
+                createFieldLabel(
+                        "School Year"
+                ),
+                gbc
+        );
+
+        schoolYearCombo =
+                new JComboBox<>();
+
+        styleComboBox(
+                schoolYearCombo
+        );
+
+        gbc.gridy = row++;
+
+        form.add(
+                schoolYearCombo,
+                gbc
+        );
+
+        // ========================================================
+        // SCHOOL LEVEL
+        // ========================================================
+
+        gbc.gridy = row++;
+
+        form.add(
+                createFieldLabel(
+                        "School Level"
+                ),
+                gbc
+        );
+
+        schoolLevelCombo =
+                new JComboBox<>();
+
+        styleComboBox(
+                schoolLevelCombo
+        );
+
+        gbc.gridy = row++;
+
+        form.add(
+                schoolLevelCombo,
+                gbc
+        );
+
+        // ========================================================
+        // GRADE LEVEL
+        // ========================================================
+
+        gbc.gridy = row++;
+
+        form.add(
+                createFieldLabel(
+                        "Grade Level"
+                ),
+                gbc
+        );
+
+        gradeLevelCombo =
+                new JComboBox<>();
+
+        styleComboBox(
+                gradeLevelCombo
+        );
+
+        gbc.gridy = row++;
+
+        form.add(
+                gradeLevelCombo,
+                gbc
+        );
+
+        // ========================================================
+        // PROGRAM
+        // ========================================================
+
+        gbc.gridy = row++;
+
+        form.add(
+                createFieldLabel(
+                        "Program"
+                ),
+                gbc
+        );
+
+        programCombo =
+                new JComboBox<>();
+
+        styleComboBox(
+                programCombo
+        );
+
+        gbc.gridy = row++;
+
+        form.add(
+                programCombo,
+                gbc
+        );
+
+        // ========================================================
+        // TRACK
+        // ========================================================
+
+        gbc.gridy = row++;
+
+        form.add(
+                createFieldLabel(
+                        "Track"
+                ),
+                gbc
+        );
+
+        trackCombo =
+                new JComboBox<>();
+
+        styleComboBox(
+                trackCombo
+        );
+
+        gbc.gridy = row++;
+
+        form.add(
+                trackCombo,
+                gbc
+        );
+
+        // ========================================================
+        // STRAND
+        // ========================================================
+
+        gbc.gridy = row++;
+
+        form.add(
+                createFieldLabel(
+                        "Strand"
+                ),
+                gbc
+        );
+
+        strandCombo =
+                new JComboBox<>();
+
+        styleComboBox(
+                strandCombo
+        );
+
+        gbc.gridy = row++;
+
+        form.add(
+                strandCombo,
+                gbc
+        );
+
+        // ========================================================
+        // SECTION NAME
+        // ========================================================
+
+        gbc.gridy = row++;
+
+        form.add(
+                createFieldLabel(
+                        "Section Name *"
+                ),
+                gbc
+        );
+
+        sectionNameField =
+                createTextField(
+                        0
+                );
+
+        gbc.gridy = row++;
+
+        form.add(
+                sectionNameField,
+                gbc
+        );
+
+        // ========================================================
+        // ROOM
+        // ========================================================
+
+        gbc.gridy = row++;
+
+        form.add(
+                createFieldLabel(
+                        "Room Name"
+                ),
+                gbc
+        );
+
+        roomNameField =
+                createTextField(
+                        0
+                );
+
+        gbc.gridy = row++;
+
+        form.add(
+                roomNameField,
+                gbc
+        );
+
+        // ========================================================
+        // ADVISER
+        // ========================================================
+
+        gbc.gridy = row++;
+
+        form.add(
+                createFieldLabel(
+                        "Adviser Teacher"
+                ),
+                gbc
+        );
+
+        adviserCombo =
+                new JComboBox<>();
+
+        styleComboBox(
+                adviserCombo
+        );
+
+        gbc.gridy = row++;
+
+        form.add(
+                adviserCombo,
+                gbc
+        );
+
+        // ========================================================
+        // FORM BUTTONS
+        // ========================================================
+
+        JPanel buttonPanel =
+                new JPanel(
+                        new GridLayout(
+                                2,
+                                2,
+                                8,
+                                8
+                        )
+                );
+
+        buttonPanel.setOpaque(
+                false
+        );
+
+        saveButton =
+                createSuccessButton(
+                        "Add Section"
+                );
+
+        updateButton =
+                createPrimaryButton(
+                        "Update Section"
+                );
+
+        deleteButton =
+                createDangerButton(
+                        "Delete Section"
+                );
+
+        clearButton =
+                createSecondaryButton(
+                        "Clear Form"
+                );
+
+        saveButton.addActionListener(
+                e -> addSection()
+        );
+
+        updateButton.addActionListener(
+                e -> updateSection()
+        );
+
+        deleteButton.addActionListener(
+                e -> deleteSection()
+        );
+
+        clearButton.addActionListener(
+                e -> clearForm()
+        );
+
+        buttonPanel.add(
+                saveButton
+        );
+
+        buttonPanel.add(
+                updateButton
+        );
+
+        buttonPanel.add(
+                deleteButton
+        );
+
+        buttonPanel.add(
+                clearButton
+        );
+
+        gbc.gridy = row++;
+
+        gbc.insets =
+                new Insets(
+                        16,
+                        0,
+                        0,
+                        0
+                );
+
+        form.add(
+                buttonPanel,
+                gbc
+        );
+
+        outer.add(
+                new JScrollPane(
+                        form
+                ),
+                BorderLayout.CENTER
+        );
+
+        loadSelectionControls();
+
+        return outer;
+    }
+
+    // ============================================================
+    // FIELD LABEL
+    // ============================================================
+
+    private JLabel createFieldLabel(
+            String text
+    ) {
+
+        JLabel label =
+                new JLabel(
+                        text
+                );
+
+        label.setForeground(
+                DARK_TEXT
+        );
+
+        label.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        11
+                )
+        );
+
+        return label;
+    }
+
+    // ============================================================
+    // TEXT FIELD
+    // ============================================================
+
+    private JTextField createTextField(
+            int width
+    ) {
+
+        JTextField field =
+                new JTextField();
+
+        if (width > 0) {
+
+            field.setPreferredSize(
+                    new Dimension(
+                            width,
+                            38
+                    )
+            );
+
+        } else {
+
+            field.setPreferredSize(
+                    new Dimension(
+                            0,
+                            38
+                    )
+            );
+        }
+
+        field.setBackground(
+                INPUT_BACKGROUND
+        );
+
+        field.setForeground(
+                DARK_TEXT
+        );
+
+        field.setCaretColor(
+                ROYAL_BLUE
+        );
+
+        field.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.PLAIN,
+                        13
+                )
+        );
+
+        field.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(
+                                INPUT_BORDER
+                        ),
+                        new EmptyBorder(
+                                6,
+                                10,
+                                6,
+                                10
+                        )
+                )
+        );
+
+        return field;
+    }
+
+    // ============================================================
+    // COMBO BOX STYLE
+    // ============================================================
+
+    private void styleComboBox(
+            JComboBox<?> combo
+    ) {
+
+        combo.setPreferredSize(
+                new Dimension(
+                        0,
+                        38
+                )
+        );
+
+        combo.setBackground(
+                INPUT_BACKGROUND
+        );
+
+        combo.setForeground(
+                DARK_TEXT
+        );
+
+        combo.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.PLAIN,
+                        13
+                )
+        );
+
+        combo.setBorder(
+                BorderFactory.createLineBorder(
+                        INPUT_BORDER
+                )
+        );
+
+        combo.setCursor(
+                new Cursor(
+                        Cursor.HAND_CURSOR
+                )
+        );
+
+        combo.setFocusable(
+                false
+        );
+
+        combo.setRenderer(
+                new javax.swing.DefaultListCellRenderer() {
+
+                    private static final long serialVersionUID = 1L;
+
+                    @Override
+                    public java.awt.Component getListCellRendererComponent(
+                            javax.swing.JList<?> list,
+                            Object value,
+                            int index,
+                            boolean isSelected,
+                            boolean cellHasFocus
+                    ) {
+
+                        JLabel label =
+                                (JLabel) super.getListCellRendererComponent(
+                                        list,
+                                        value,
+                                        index,
+                                        isSelected,
+                                        cellHasFocus
+                                );
+
+                        label.setFont(
+                                new Font(
+                                        "Segoe UI",
+                                        Font.PLAIN,
+                                        13
+                                )
+                        );
+
+                        label.setBorder(
+                                new EmptyBorder(
+                                        6,
+                                        8,
+                                        6,
+                                        8
+                                )
+                        );
+
+                        if (isSelected) {
+
+                            label.setBackground(
+                                    ROYAL_BLUE
+                            );
+
+                            label.setForeground(
+                                    WHITE
+                            );
+
+                        } else {
+
+                            label.setBackground(
+                                    WHITE
+                            );
+
+                            label.setForeground(
+                                    DARK_TEXT
+                            );
+                        }
+
+                        return label;
+                    }
+                }
+        );
+    }
+
+    // ============================================================
+    // TABLE PANEL
+    // ============================================================
+
+    private JPanel createTablePanel() {
+
+        JPanel panel =
+                new JPanel(
+                        new BorderLayout()
+                );
+
+        panel.setBackground(
+                WHITE
+        );
+
+        panel.setBorder(
+                BorderFactory.createLineBorder(
+                        BORDER
+                )
+        );
+
+        // ========================================================
+        // TABLE HEADER
+        // ========================================================
+
+        JPanel header =
+                new JPanel(
+                        new BorderLayout()
+                );
+
+        header.setBackground(
+                WHITE
+        );
+
+        header.setBorder(
+                new EmptyBorder(
+                        15,
+                        18,
+                        12,
+                        18
+                )
+        );
+
+        JLabel title =
+                new JLabel(
+                        "Registered Sections"
+                );
+
+        title.setForeground(
+                NAVY
+        );
+
+        title.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        17
+                )
+        );
+
+        JLabel instruction =
+                new JLabel(
+                        "Select a section row to edit or delete"
+                );
+
+        instruction.setForeground(
+                MUTED_TEXT
+        );
+
+        instruction.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.PLAIN,
+                        11
+                )
+        );
+
+        header.add(
+                title,
+                BorderLayout.WEST
+        );
+
+        header.add(
+                instruction,
+                BorderLayout.EAST
+        );
+
+        panel.add(
+                header,
+                BorderLayout.NORTH
+        );
+
+        // ========================================================
+        // TABLE MODEL
+        // ========================================================
+
+        tableModel =
+                new DefaultTableModel(
+                        new Object[] {
+                                "ID",
+                                "Section Name",
+                                "Room",
+                                "Grade",
+                                "Level",
+                                "Program",
+                                "Track",
+                                "Strand",
+                                "Adviser",
+                                "Status"
+                        },
+                        0
+                ) {
+
+                    private static final long serialVersionUID = 1L;
+
+                    @Override
+                    public boolean isCellEditable(
+                            int row,
+                            int column
+                    ) {
+
+                        return false;
+                    }
+                };
+
+        sectionTable =
+                new JTable(
+                        tableModel
+                );
+
+        sectionTable.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.PLAIN,
+                        12
+                )
+        );
+
+        sectionTable.setForeground(
+                DARK_TEXT
+        );
+
+        sectionTable.setBackground(
+                WHITE
+        );
+
+        sectionTable.setRowHeight(
+                34
+        );
+
+        sectionTable.setSelectionMode(
+                ListSelectionModel.SINGLE_SELECTION
+        );
+
+        sectionTable.setSelectionBackground(
+                SELECTED_BLUE
+        );
+
+        sectionTable.setSelectionForeground(
+                DARK_TEXT
+        );
+
+        sectionTable.setShowGrid(
+                true
+        );
+
+        sectionTable.setGridColor(
+                BORDER
+        );
+
+        sectionTable.getTableHeader().setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        11
+                )
+        );
+
+        sectionTable.getTableHeader().setBackground(
+                NAVY
+        );
+
+        sectionTable.getTableHeader().setForeground(
+                WHITE
+        );
+
+        sectionTable.getTableHeader().setPreferredSize(
+                new Dimension(
+                        0,
+                        38
+                )
+        );
+
+        sectionTable.getTableHeader().setReorderingAllowed(
+                false
+        );
+
+        // ========================================================
+        // COLUMN WIDTHS
+        // ========================================================
+
+        sectionTable.getColumnModel()
+                .getColumn(0)
+                .setPreferredWidth(45);
+
+        sectionTable.getColumnModel()
+                .getColumn(1)
+                .setPreferredWidth(130);
+
+        sectionTable.getColumnModel()
+                .getColumn(2)
+                .setPreferredWidth(100);
+
+        sectionTable.getColumnModel()
+                .getColumn(3)
+                .setPreferredWidth(75);
+
+        sectionTable.getColumnModel()
+                .getColumn(4)
+                .setPreferredWidth(85);
+
+        sectionTable.getColumnModel()
+                .getColumn(5)
+                .setPreferredWidth(100);
+
+        sectionTable.getColumnModel()
+                .getColumn(6)
+                .setPreferredWidth(90);
+
+        sectionTable.getColumnModel()
+                .getColumn(7)
+                .setPreferredWidth(90);
+
+        sectionTable.getColumnModel()
+                .getColumn(8)
+                .setPreferredWidth(130);
+
+        sectionTable.getColumnModel()
+                .getColumn(9)
+                .setPreferredWidth(75);
+
+        // ========================================================
+        // ROW SELECTION
+        // ========================================================
+
+        sectionTable.getSelectionModel()
+                .addListSelectionListener(
+                        e -> {
+
+                            if (!e.getValueIsAdjusting()) {
+
+                                loadSelectedRow();
+                            }
+                        }
+                );
+
+        JScrollPane scrollPane =
+                new JScrollPane(
+                        sectionTable
+                );
+
+        scrollPane.setBorder(
+                BorderFactory.createLineBorder(
+                        BORDER
+                )
+        );
+
+        panel.add(
+                scrollPane,
+                BorderLayout.CENTER
+        );
+
+        return panel;
+    }
+
+    // ============================================================
+    // LOAD SELECTION CONTROLS
+    // ============================================================
+
+    private void loadSelectionControls() {
+
+        // --------------------------------------------------------
+        // School Year
+        // --------------------------------------------------------
+
+        loadComboFromService(
+                schoolYearCombo,
+                "getSchoolYears"
+        );
+
+        // --------------------------------------------------------
+        // School Level
+        // --------------------------------------------------------
+
+        loadComboFromService(
+                schoolLevelCombo,
+                "getSchoolLevels"
+        );
+
+        // --------------------------------------------------------
+        // Grade Level
+        // --------------------------------------------------------
+
+        loadComboFromService(
+                gradeLevelCombo,
+                "getGradeLevels"
+        );
+
+        // --------------------------------------------------------
+        // Program
+        // --------------------------------------------------------
+
+        loadComboFromService(
+                programCombo,
+                "getPrograms"
+        );
+
+        // --------------------------------------------------------
+        // Track
+        // --------------------------------------------------------
+
+        loadComboFromService(
+                trackCombo,
+                "getTracks"
+        );
+
+        // --------------------------------------------------------
+        // Strand
+        // --------------------------------------------------------
+
+        loadComboFromService(
+                strandCombo,
+                "getStrands"
+        );
+
+        // --------------------------------------------------------
+        // Adviser
+        // --------------------------------------------------------
+
+        loadComboFromService(
+                adviserCombo,
+                "getTeachers"
+        );
+
+        // --------------------------------------------------------
+        // Fallback controls
+        // --------------------------------------------------------
+
+        addFallbackItems();
+    }
+
+    // ============================================================
+    // SERVICE COMBO LOADER
+    // ============================================================
+
+    @SuppressWarnings("unchecked")
+    private void loadComboFromService(
+            JComboBox<IdNameItem> combo,
+            String methodName
+    ) {
+
+        combo.removeAllItems();
+
+        combo.addItem(
+                new IdNameItem(
+                        0,
+                        "Select..."
+                )
+        );
+
+        if (sectionService == null) {
+            return;
+        }
+
+        try {
+
+            Method method =
+                    findNoArgumentMethod(
+                            sectionService.getClass(),
+                            methodName
+                    );
+
+            if (method == null) {
+                return;
+            }
+
+            Object result =
+                    method.invoke(
+                            sectionService
+                    );
+
+            if (result instanceof List<?>) {
+
+                List<?> list =
+                        (List<?>) result;
+
+                for (Object object : list) {
+
+                    IdNameItem item =
+                            convertToIdNameItem(
+                                    object
+                            );
+
+                    if (item != null) {
+
+                        combo.addItem(
+                                item
+                        );
+                    }
+                }
+            }
+
+        } catch (Exception ex) {
+
+            System.err.println(
+                    "Unable to load "
+                            + methodName
+                            + ": "
+                            + ex.getMessage()
+            );
+        }
+    }
+
+    // ============================================================
+    // FIND METHOD
+    // ============================================================
+
+    private Method findNoArgumentMethod(
+            Class<?> type,
+            String methodName
+    ) {
+
+        try {
+
+            return type.getMethod(
+                    methodName
+            );
+
+        } catch (NoSuchMethodException ex) {
+
+            return null;
+        }
+    }
+
+    // ============================================================
+    // CONVERT OBJECT TO ID/NAME
+    // ============================================================
+
+    private IdNameItem convertToIdNameItem(
+            Object object
+    ) {
+
+        if (object == null) {
+            return null;
+        }
+
+        if (object instanceof IdNameItem) {
+
+            return (IdNameItem) object;
+        }
+
+        try {
+
+            Integer id =
+                    invokeIntegerGetter(
+                            object,
+                            "getId"
+                    );
+
+            if (id == null) {
+
+                id =
+                        invokeIntegerGetter(
+                                object,
+                                "getSchoolYearId"
+                        );
+            }
+
+            if (id == null) {
+
+                id =
+                        invokeIntegerGetter(
+                                object,
+                                "getSchoolLevelId"
+                        );
+            }
+
+            if (id == null) {
+
+                id =
+                        invokeIntegerGetter(
+                                object,
+                                "getGradeLevelId"
+                        );
+            }
+
+            if (id == null) {
+
+                id =
+                        invokeIntegerGetter(
+                                object,
+                                "getProgramId"
+                        );
+            }
+
+            if (id == null) {
+
+                id =
+                        invokeIntegerGetter(
+                                object,
+                                "getTrackId"
+                        );
+            }
+
+            if (id == null) {
+
+                id =
+                        invokeIntegerGetter(
+                                object,
+                                "getStrandId"
+                        );
+            }
+
+            if (id == null) {
+
+                id =
+                        invokeIntegerGetter(
+                                object,
+                                "getUserId"
+                        );
+            }
+
+            if (id == null) {
+
+                return null;
+            }
+
+            String name =
+                    invokeStringGetter(
+                            object,
+                            "getName"
+                    );
+
+            if (name == null) {
+
+                name =
+                        invokeStringGetter(
+                                object,
+                                "getSchoolYear"
+                        );
+            }
+
+            if (name == null) {
+
+                name =
+                        invokeStringGetter(
+                                object,
+                                "getSchoolLevel"
+                        );
+            }
+
+            if (name == null) {
+
+                name =
+                        invokeStringGetter(
+                                object,
+                                "getGradeLevel"
+                        );
+            }
+
+            if (name == null) {
+
+                name =
+                        invokeStringGetter(
+                                object,
+                                "getProgramName"
+                        );
+            }
+
+            if (name == null) {
+
+                name =
+                        invokeStringGetter(
+                                object,
+                                "getTrackName"
+                        );
+            }
+
+            if (name == null) {
+
+                name =
+                        invokeStringGetter(
+                                object,
+                                "getStrandName"
+                        );
+            }
+
+            if (name == null) {
+
+                name =
+                        object.toString();
+            }
+
+            return new IdNameItem(
+                    id,
+                    name
+            );
+
+        } catch (Exception ex) {
+
+            return null;
+        }
+    }
+
+    // ============================================================
+    // INTEGER GETTER
+    // ============================================================
+
+    private Integer invokeIntegerGetter(
+            Object object,
+            String methodName
+    ) {
+
+        try {
+
+            Method method =
+                    object.getClass()
+                            .getMethod(
+                                    methodName
+                            );
+
+            Object value =
+                    method.invoke(
+                            object
+                    );
+
+            if (value instanceof Number) {
+
+                return ((Number) value).intValue();
+            }
+
+        } catch (Exception ignored) {
+        }
+
+        return null;
+    }
+
+    // ============================================================
+    // STRING GETTER
+    // ============================================================
+
+    private String invokeStringGetter(
+            Object object,
+            String methodName
+    ) {
+
+        try {
+
+            Method method =
+                    object.getClass()
+                            .getMethod(
+                                    methodName
+                            );
+
+            Object value =
+                    method.invoke(
+                            object
+                    );
+
+            if (value != null) {
+
+                return String.valueOf(
+                        value
+                );
+            }
+
+        } catch (Exception ignored) {
+        }
+
+        return null;
+    }
+
+    // ============================================================
+    // FALLBACK SELECTION ITEMS
+    // ============================================================
+
+    private void addFallbackItems() {
+
+        if (schoolLevelCombo.getItemCount() <= 1) {
+
+            addItems(
+                    schoolLevelCombo,
+                    new String[] {
+                            "Junior High School",
+                            "Senior High School"
+                    }
+            );
+        }
+
+        if (gradeLevelCombo.getItemCount() <= 1) {
+
+            addItems(
+                    gradeLevelCombo,
+                    new String[] {
+                            "Grade 7",
+                            "Grade 8",
+                            "Grade 9",
+                            "Grade 10",
+                            "Grade 11",
+                            "Grade 12"
+                    }
+            );
+        }
+
+        if (programCombo.getItemCount() <= 1) {
+
+            addItems(
+                    programCombo,
+                    new String[] {
+                            "Regular",
+                            "SPA",
+                            "STE"
+                    }
+            );
+        }
+
+        if (trackCombo.getItemCount() <= 1) {
+
+            addItems(
+                    trackCombo,
+                    new String[] {
+                            "Academic",
+                            "TechPro",
+                            "STEM",
+                            "ABM",
+                            "HUMSS",
+                            "ICT",
+                            "Cookery",
+                            "MMAW",
+                            "Carpentry"
+                    }
+            );
+        }
+
+        if (strandCombo.getItemCount() <= 1) {
+
+            addItems(
+                    strandCombo,
+                    new String[] {
+                            "STEM",
+                            "ABM",
+                            "HUMSS",
+                            "ICT",
+                            "Cookery",
+                            "MMAW",
+                            "Carpentry"
+                    }
+            );
+        }
+    }
+
+    // ============================================================
+    // ADD STRING ITEMS
+    // ============================================================
+
+    private void addItems(
+            JComboBox<IdNameItem> combo,
+            String[] names
+    ) {
+
+        for (int i = 0; i < names.length; i++) {
+
+            combo.addItem(
+                    new IdNameItem(
+                            i + 1,
+                            names[i]
+                    )
+            );
+        }
+    }
+
+    // ============================================================
+    // LOAD SECTIONS
+    // ============================================================
+
+    private void loadSections() {
+
+        if (tableModel == null) {
+            return;
+        }
+
+        tableModel.setRowCount(0);
+
+        List<?> sections =
+                Collections.emptyList();
+
+        if (sectionService != null) {
+
+            try {
+
+                Method method =
+                        findSectionListMethod();
+
+                if (method != null) {
+
+                    Object result;
+
+                    if (method.getParameterCount() == 0) {
+
+                        result =
+                                method.invoke(
+                                        sectionService
+                                );
+
+                    } else {
+
+                        result =
+                                method.invoke(
+                                        sectionService,
+                                        getSearchText()
+                                );
+                    }
+
+                    if (result instanceof List<?>) {
+
+                        sections =
+                                (List<?>) result;
+                    }
+                }
+
+            } catch (Exception ex) {
+
+                System.err.println(
+                        "Section loading error: "
+                                + ex.getMessage()
+                );
+            }
+        }
+
+        for (Object object : sections) {
+
+            addSectionToTable(
+                    object
+            );
+        }
+
+        recordCountLabel.setText(
+                tableModel.getRowCount()
+                        + " section"
+                        + (
+                                tableModel.getRowCount() == 1
+                                        ? ""
+                                        : "s"
+                        )
+        );
+    }
+
+    // ============================================================
+    // FIND SECTION LIST METHOD
+    // ============================================================
+
+    private Method findSectionListMethod() {
+
+        String[] names = {
+                "getAllSections",
+                "findAll",
+                "getSections",
+                "searchSections"
+        };
+
+        for (String name : names) {
+
+            for (Method method :
+                    sectionService.getClass()
+                            .getMethods()) {
+
+                if (!method.getName().equals(name)) {
+                    continue;
+                }
+
+                Class<?> returnType =
+                        method.getReturnType();
+
+                if (List.class.isAssignableFrom(
+                        returnType
+                )) {
+
+                    if (method.getParameterCount() == 0
+                            || method.getParameterCount() == 1) {
+
+                        return method;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    // ============================================================
+    // SEARCH TEXT
+    // ============================================================
+
+    private String getSearchText() {
+
+        if (searchField == null) {
+            return "";
+        }
+
+        String text =
+                searchField.getText();
+
+        if (text == null) {
+            return "";
+        }
+
+        return text.trim();
+    }
+
+    // ============================================================
+    // ADD OBJECT TO TABLE
+    // ============================================================
+
+    private void addSectionToTable(
+            Object object
+    ) {
+
+        if (object == null) {
+            return;
+        }
+
+        try {
+
+            int id =
+                    getIntProperty(
+                            object,
+                            "getSectionId",
+                            "getId"
+                    );
+
+            String sectionName =
+                    getStringProperty(
+                            object,
+                            "getSectionName",
+                            "getName"
+                    );
+
+            String roomName =
+                    getStringProperty(
+                            object,
+                            "getRoomName"
+                    );
+
+            String grade =
+                    getStringProperty(
+                            object,
+                            "getGradeLevelName",
+                            "getGradeLevel"
+                    );
+
+            String level =
+                    getStringProperty(
+                            object,
+                            "getSchoolLevelName",
+                            "getSchoolLevel"
+                    );
+
+            String program =
+                    getStringProperty(
+                            object,
+                            "getProgramName",
+                            "getProgram"
+                    );
+
+            String track =
+                    getStringProperty(
+                            object,
+                            "getTrackName",
+                            "getTrack"
+                    );
+
+            String strand =
+                    getStringProperty(
+                            object,
+                            "getStrandName",
+                            "getStrand"
+                    );
+
+            String adviser =
+                    getStringProperty(
+                            object,
+                            "getAdviserName",
+                            "getTeacherName",
+                            "getAdviser"
+                    );
+
+            boolean active =
+                    getBooleanProperty(
+                            object,
+                            "isActive",
+                            "getActive"
+                    );
+
+            String status =
+                    active
+                            ? "ACTIVE"
+                            : "INACTIVE";
+
+            String search =
+                    getSearchText()
+                            .toLowerCase();
+
+            String combined =
+                    (
+                            safe(sectionName)
+                                    + " "
+                                    + safe(roomName)
+                    ).toLowerCase();
+
+            if (!search.isEmpty()
+                    && !combined.contains(search)) {
+
+                return;
+            }
+
+            String selectedStatus =
+                    statusCombo == null
+                            ? "ALL"
+                            : String.valueOf(
+                                    statusCombo.getSelectedItem()
+                            );
+
+            if ("ACTIVE".equals(
+                    selectedStatus
+            ) && !active) {
+
+                return;
+            }
+
+            if ("INACTIVE".equals(
+                    selectedStatus
+            ) && active) {
+
+                return;
+            }
+
+            tableModel.addRow(
+                    new Object[] {
+                            id,
+                            safe(sectionName),
+                            safe(roomName),
+                            safe(grade),
+                            safe(level),
+                            safe(program),
+                            safe(track),
+                            safe(strand),
+                            safe(adviser),
+                            status
+                    }
+            );
+
+        } catch (Exception ex) {
+
+            System.err.println(
+                    "Unable to display section: "
+                            + ex.getMessage()
+            );
+        }
+    }
+
+    // ============================================================
+    // STRING PROPERTY
+    // ============================================================
+
+    private String getStringProperty(
+            Object object,
+            String... methods
+    ) {
+
+        for (String methodName : methods) {
+
+            String value =
+                    invokeStringGetter(
+                            object,
+                            methodName
+                    );
+
+            if (value != null) {
+
+                return value;
+            }
+        }
+
+        return "";
+    }
+
+    // ============================================================
+    // INTEGER PROPERTY
+    // ============================================================
+
+    private int getIntProperty(
+            Object object,
+            String... methods
+    ) {
+
+        for (String methodName : methods) {
+
+            Integer value =
+                    invokeIntegerGetter(
+                            object,
+                            methodName
+                    );
+
+            if (value != null) {
+
+                return value;
+            }
+        }
+
+        return 0;
+    }
+
+    // ============================================================
+    // BOOLEAN PROPERTY
+    // ============================================================
+
+    private boolean getBooleanProperty(
+            Object object,
+            String... methods
+    ) {
+
+        for (String methodName : methods) {
+
+            try {
+
+                Method method =
+                        object.getClass()
+                                .getMethod(
+                                        methodName
+                                );
+
+                Object value =
+                        method.invoke(
+                                object
+                        );
+
+                if (value instanceof Boolean) {
+
+                    return (Boolean) value;
+                }
+
+            } catch (Exception ignored) {
+            }
+        }
+
+        return true;
+    }
+
+    // ============================================================
+    // SAFE STRING
+    // ============================================================
+
+    private String safe(
+            String value
+    ) {
+
+        return value == null
+                ? ""
+                : value;
+    }
+
+    // ============================================================
+    // LOAD SELECTED ROW
+    // ============================================================
+
+    private void loadSelectedRow() {
+
+        int row =
+                sectionTable.getSelectedRow();
+
+        if (row < 0) {
+
+            return;
+        }
+
+        selectedSectionId =
+                getTableInt(
+                        row,
+                        0
+                );
+
+        sectionNameField.setText(
+                getTableString(
+                        row,
+                        1
+                )
+        );
+
+        roomNameField.setText(
+                getTableString(
+                        row,
+                        2
+                )
+        );
+
+        selectComboByText(
+                gradeLevelCombo,
+                getTableString(
+                        row,
+                        3
+                )
+        );
+
+        selectComboByText(
+                schoolLevelCombo,
+                getTableString(
+                        row,
+                        4
+                )
+        );
+
+        selectComboByText(
+                programCombo,
+                getTableString(
+                        row,
+                        5
+                )
+        );
+
+        selectComboByText(
+                trackCombo,
+                getTableString(
+                        row,
+                        6
+                )
+        );
+
+        selectComboByText(
+                strandCombo,
+                getTableString(
+                        row,
+                        7
+                )
+        );
+
+        selectComboByText(
+                adviserCombo,
+                getTableString(
+                        row,
+                        8
+                )
+        );
+
+        formModeLabel.setText(
+                "EDITING SECTION #"
+                        + selectedSectionId
+        );
+
+        saveButton.setEnabled(
+                false
+        );
+
+        updateButton.setEnabled(
+                true
+        );
+
+        deleteButton.setEnabled(
+                true
+        );
+    }
+
+    // ============================================================
+    // TABLE INT
+    // ============================================================
+
+    private int getTableInt(
+            int row,
+            int column
+    ) {
+
+        Object value =
+                tableModel.getValueAt(
+                        row,
+                        column
+                );
+
+        if (value instanceof Number) {
+
+            return ((Number) value).intValue();
+        }
+
+        try {
+
+            return Integer.parseInt(
+                    String.valueOf(
+                            value
+                    )
+            );
+
+        } catch (Exception ex) {
+
+            return -1;
+        }
+    }
+
+    // ============================================================
+    // TABLE STRING
+    // ============================================================
+
+    private String getTableString(
+            int row,
+            int column
+    ) {
+
+        Object value =
+                tableModel.getValueAt(
+                        row,
+                        column
+                );
+
+        return value == null
+                ? ""
+                : String.valueOf(
+                        value
+                );
+    }
+
+    // ============================================================
+    // SELECT COMBO ITEM
+    // ============================================================
+
+    private void selectComboByText(
+            JComboBox<IdNameItem> combo,
+            String text
+    ) {
+
+        if (combo == null
+                || text == null
+                || text.trim().isEmpty()) {
+
+            return;
+        }
+
+        for (int i = 0;
+                i < combo.getItemCount();
+                i++) {
+
+            IdNameItem item =
+                    combo.getItemAt(i);
+
+            if (item != null
+                    && item.getName()
+                            .equalsIgnoreCase(
+                                    text.trim()
+                            )) {
+
+                combo.setSelectedIndex(
+                        i
+                );
+
+                return;
+            }
+        }
+    }
+
+    // ============================================================
+    // ADD SECTION
+    // ============================================================
+
+    private void addSection() {
+
+        if (!validateForm()) {
+            return;
+        }
+
+        if (sectionService == null) {
+
+            showError(
+                    "SectionService is not available."
+            );
+
+            return;
+        }
+
+        try {
+
+            Section section =
+                    buildSectionFromForm();
+
+            boolean success =
+                    invokeSaveMethod(
+                            section
+                    );
+
+            if (success) {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Section has been added successfully.",
+                        "Section Management",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+
+                loadSections();
+
+                clearForm();
+
+            } else {
+
+                showError(
+                        "The section could not be added."
+                );
+            }
+
+        } catch (Exception ex) {
+
+            showError(
+                    "Unable to add section.\n\n"
+                            + ex.getMessage()
+            );
+        }
+    }
+
+    // ============================================================
+    // UPDATE SECTION
+    // ============================================================
+
+    private void updateSection() {
+
+        if (selectedSectionId <= 0) {
+
+            showWarning(
+                    "Please select a section first."
+            );
+
+            return;
+        }
+
+        if (!validateForm()) {
+            return;
+        }
+
+        if (sectionService == null) {
+
+            showError(
+                    "SectionService is not available."
+            );
+
+            return;
+        }
+
+        int choice =
+                JOptionPane.showConfirmDialog(
+                        this,
+                        "Update the selected section?",
+                        "Confirm Update",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE
+                );
+
+        if (choice != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        try {
+
+            Section section =
+                    buildSectionFromForm();
+
+            setSectionId(
+                    section,
+                    selectedSectionId
+            );
+
+            boolean success =
+                    invokeUpdateMethod(
+                            section
+                    );
+
+            if (success) {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Section has been updated successfully.",
+                        "Section Management",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+
+                loadSections();
+
+                clearForm();
+
+            } else {
+
+                showError(
+                        "The section could not be updated."
+                );
+            }
+
+        } catch (Exception ex) {
+
+            showError(
+                    "Unable to update section.\n\n"
+                            + ex.getMessage()
+            );
+        }
+    }
+
+    // ============================================================
+    // DELETE / DEACTIVATE SECTION
+    // ============================================================
+
+    private void deleteSection() {
+
+        if (selectedSectionId <= 0) {
+
+            showWarning(
+                    "Please select a section first."
+            );
+
+            return;
+        }
+
+        if (sectionService == null) {
+
+            showError(
+                    "SectionService is not available."
+            );
+
+            return;
+        }
+
+        int choice =
+                JOptionPane.showConfirmDialog(
+                        this,
+                        "Are you sure you want to deactivate this section?",
+                        "Confirm Deactivation",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.WARNING_MESSAGE
+                );
+
+        if (choice != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        try {
+
+            boolean success =
+                    invokeDeleteMethod(
+                            selectedSectionId
+                    );
+
+            if (success) {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Section has been deactivated.",
+                        "Section Management",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+
+                loadSections();
+
+                clearForm();
+
+            } else {
+
+                showError(
+                        "The section could not be deactivated."
+                );
+            }
+
+        } catch (Exception ex) {
+
+            showError(
+                    "Unable to deactivate section.\n\n"
+                            + ex.getMessage()
+            );
+        }
+    }
+
+    // ============================================================
+    // BUILD SECTION
+    // ============================================================
+
+    private Section buildSectionFromForm() {
+
+        Section section =
+                new Section();
+
+        setSectionId(
+                section,
+                selectedSectionId
+        );
+
+        setObjectProperty(
+                section,
+                "setSectionName",
+                sectionNameField.getText().trim()
+        );
+
+        setObjectProperty(
+                section,
+                "setRoomName",
+                roomNameField.getText().trim()
+        );
+
+        setObjectIdProperty(
+                section,
+                "setSchoolYearId",
+                schoolYearCombo
+        );
+
+        setObjectIdProperty(
+                section,
+                "setSchoolLevelId",
+                schoolLevelCombo
+        );
+
+        setObjectIdProperty(
+                section,
+                "setGradeLevelId",
+                gradeLevelCombo
+        );
+
+        setObjectIdProperty(
+                section,
+                "setProgramId",
+                programCombo
+        );
+
+        setObjectIdProperty(
+                section,
+                "setTrackId",
+                trackCombo
+        );
+
+        setObjectIdProperty(
+                section,
+                "setStrandId",
+                strandCombo
+        );
+
+        setObjectIdProperty(
+                section,
+                "setAdviserTeacherId",
+                adviserCombo
+        );
+
+        return section;
+    }
+
+    // ============================================================
+    // SET SECTION ID
+    // ============================================================
+
+    private void setSectionId(
+            Section section,
+            int id
+    ) {
+
+        if (id <= 0) {
+            return;
+        }
+
+        setObjectProperty(
+                section,
+                "setSectionId",
+                id
+        );
+    }
+
+    // ============================================================
+    // SET OBJECT PROPERTY
+    // ============================================================
+
+    private void setObjectProperty(
+            Object object,
+            String methodName,
+            Object value
+    ) {
+
+        if (object == null) {
+            return;
+        }
+
+        try {
+
+            for (Method method :
+                    object.getClass()
+                            .getMethods()) {
+
+                if (!method.getName()
+                        .equals(methodName)) {
+
+                    continue;
+                }
+
+                if (method.getParameterCount()
+                        != 1) {
+
+                    continue;
+                }
+
+                Class<?> parameterType =
+                        method.getParameterTypes()[0];
+
+                if (value == null
+                        || isCompatible(
+                                parameterType,
+                                value.getClass()
+                        )) {
+
+                    method.invoke(
+                            object,
+                            value
+                    );
+
+                    return;
+                }
+
+                if (parameterType == int.class
+                        && value instanceof Number) {
+
+                    method.invoke(
+                            object,
+                            ((Number) value).intValue()
+                    );
+
+                    return;
+                }
+
+            }
+
+        } catch (Exception ex) {
+
+            System.err.println(
+                    "Property setter error "
+                            + methodName
+                            + ": "
+                            + ex.getMessage()
+            );
+        }
+    }
+
+    // ============================================================
+    // SET OBJECT ID PROPERTY
+    // ============================================================
+
+    private void setObjectIdProperty(
+            Object object,
+            String methodName,
+            JComboBox<IdNameItem> combo
+    ) {
+
+        IdNameItem item =
+                getSelectedItem(
+                        combo
+                );
+
+        if (item == null
+                || item.getId() <= 0) {
+
+            return;
+        }
+
+        setObjectProperty(
+                object,
+                methodName,
+                item.getId()
+        );
+    }
+
+    // ============================================================
+    // COMPATIBLE TYPE
+    // ============================================================
+
+    private boolean isCompatible(
+            Class<?> target,
+            Class<?> source
+    ) {
+
+        if (target.isAssignableFrom(
+                source
+        )) {
+
+            return true;
+        }
+
+        if (target == int.class
+                && Integer.class
+                        .isAssignableFrom(
+                                source
+                        )) {
+
+            return true;
+        }
+
+        if (target == long.class
+                && Long.class
+                        .isAssignableFrom(
+                                source
+                        )) {
+
+            return true;
+        }
+
+        if (target == boolean.class
+                && Boolean.class
+                        .isAssignableFrom(
+                                source
+                        )) {
+
+            return true;
+        }
+
+        return false;
+    }
+
+    // ============================================================
+    // INVOKE SAVE
+    // ============================================================
+
+    private boolean invokeSaveMethod(
+            Section section
+    ) throws Exception {
+
+        String[] names = {
+                "createSection",
+                "addSection",
+                "saveSection",
+                "insertSection"
+        };
+
+        for (String name : names) {
+
+            Method method =
+                    findOneParameterMethod(
+                            name
+                    );
+
+            if (method != null) {
+
+                Object result =
+                        method.invoke(
+                                sectionService,
+                                section
+                        );
+
+                return result == null
+                        || Boolean.TRUE.equals(
+                                result
+                        );
+            }
+        }
+
+        throw new NoSuchMethodException(
+                "No section create/save method found in SectionService."
+        );
+    }
+
+    // ============================================================
+    // INVOKE UPDATE
+    // ============================================================
+
+    private boolean invokeUpdateMethod(
+            Section section
+    ) throws Exception {
+
+        String[] names = {
+                "updateSection",
+                "saveSection"
+        };
+
+        for (String name : names) {
+
+            Method method =
+                    findOneParameterMethod(
+                            name
+                    );
+
+            if (method != null) {
+
+                Object result =
+                        method.invoke(
+                                sectionService,
+                                section
+                        );
+
+                return result == null
+                        || Boolean.TRUE.equals(
+                                result
+                        );
+            }
+        }
+
+        throw new NoSuchMethodException(
+                "No section update method found in SectionService."
+        );
+    }
+
+    // ============================================================
+    // INVOKE DELETE
+    // ============================================================
+
+    private boolean invokeDeleteMethod(
+            int sectionId
+    ) throws Exception {
+
+        String[] names = {
+                "deleteSection",
+                "deactivateSection",
+                "removeSection"
+        };
+
+        for (String name : names) {
+
+            for (Method method :
+                    sectionService.getClass()
+                            .getMethods()) {
+
+                if (!method.getName()
+                        .equals(name)) {
+
+                    continue;
+                }
+
+                if (method.getParameterCount()
+                        != 1) {
+
+                    continue;
+                }
+
+                Class<?> parameter =
+                        method.getParameterTypes()[0];
+
+                Object result;
+
+                if (parameter == int.class
+                        || parameter == Integer.class) {
+
+                    result =
+                            method.invoke(
+                                    sectionService,
+                                    sectionId
+                            );
+
+                } else if (parameter == long.class
+                        || parameter == Long.class) {
+
+                    result =
+                            method.invoke(
+                                    sectionService,
+                                    (long) sectionId
+                            );
+
+                } else {
+
+                    continue;
+                }
+
+                return result == null
+                        || Boolean.TRUE.equals(
+                                result
+                        );
+            }
+        }
+
+        throw new NoSuchMethodException(
+                "No section delete/deactivate method found."
+        );
+    }
+
+    // ============================================================
+    // FIND ONE PARAMETER METHOD
+    // ============================================================
+
+    private Method findOneParameterMethod(
+            String name
+    ) {
+
+        for (Method method :
+                sectionService.getClass()
+                        .getMethods()) {
+
+            if (method.getName()
+                    .equals(name)
+                    && method.getParameterCount()
+                    == 1) {
+
+                return method;
+            }
+        }
+
+        return null;
+    }
+
+    // ============================================================
+    // VALIDATE FORM
+    // ============================================================
+
+    private boolean validateForm() {
+
+        String sectionName =
+                sectionNameField.getText()
+                        .trim();
+
+        if (sectionName.isEmpty()) {
+
+            showWarning(
+                    "Section name is required."
+            );
+
+            sectionNameField.requestFocus();
+
+            return false;
+        }
+
+        IdNameItem schoolYear =
+                getSelectedItem(
+                        schoolYearCombo
+                );
+
+        if (schoolYear == null
+                || schoolYear.getId() <= 0) {
+
+            showWarning(
+                    "Please select a school year."
+            );
+
+            schoolYearCombo.requestFocus();
+
+            return false;
+        }
+
+        IdNameItem schoolLevel =
+                getSelectedItem(
+                        schoolLevelCombo
+                );
+
+        if (schoolLevel == null
+                || schoolLevel.getId() <= 0) {
+
+            showWarning(
+                    "Please select a school level."
+            );
+
+            schoolLevelCombo.requestFocus();
+
+            return false;
+        }
+
+        IdNameItem gradeLevel =
+                getSelectedItem(
+                        gradeLevelCombo
+                );
+
+        if (gradeLevel == null
+                || gradeLevel.getId() <= 0) {
+
+            showWarning(
+                    "Please select a grade level."
+            );
+
+            gradeLevelCombo.requestFocus();
+
+            return false;
+        }
+
+        return true;
+    }
+
+    // ============================================================
+    // GET SELECTED ITEM
+    // ============================================================
+
+    private IdNameItem getSelectedItem(
+            JComboBox<IdNameItem> combo
+    ) {
+
+        if (combo == null) {
+            return null;
+        }
+
+        Object value =
+                combo.getSelectedItem();
+
+        if (value instanceof IdNameItem) {
+
+            return (IdNameItem) value;
+        }
+
+        return null;
+    }
+
+    // ============================================================
+    // CLEAR FORM
+    // ============================================================
+
+    private void clearForm() {
+
+        selectedSectionId = -1;
+
+        sectionNameField.setText("");
+
+        roomNameField.setText("");
+
+        selectFirst(
+                schoolYearCombo
+        );
+
+        selectFirst(
+                schoolLevelCombo
+        );
+
+        selectFirst(
+                gradeLevelCombo
+        );
+
+        selectFirst(
+                programCombo
+        );
+
+        selectFirst(
+                trackCombo
+        );
+
+        selectFirst(
+                strandCombo
+        );
+
+        selectFirst(
+                adviserCombo
+        );
+
+        sectionTable.clearSelection();
+
+        formModeLabel.setText(
+                "NEW SECTION"
+        );
+
+        saveButton.setEnabled(
+                true
+        );
+
+        updateButton.setEnabled(
+                false
+        );
+
+        deleteButton.setEnabled(
+                false
+        );
+
+        sectionNameField.requestFocus();
+    }
+
+    // ============================================================
+    // SELECT FIRST
+    // ============================================================
+
+    private void selectFirst(
+            JComboBox<?> combo
+    ) {
+
+        if (combo != null
+                && combo.getItemCount() > 0) {
+
+            combo.setSelectedIndex(
+                    0
+            );
+        }
+    }
+
+    // ============================================================
+    // BUTTONS
+    // ============================================================
+
+    private JButton createPrimaryButton(
+            String text
+    ) {
+
+        JButton button =
+                new JButton(
+                        text
+                );
+
+        styleButton(
+                button,
+                ROYAL_BLUE,
+                WHITE
+        );
+
+        return button;
+    }
+
+    private JButton createSuccessButton(
+            String text
+    ) {
+
+        JButton button =
+                new JButton(
+                        text
+                );
+
+        styleButton(
+                button,
+                SUCCESS,
+                WHITE
+        );
+
+        return button;
+    }
+
+    private JButton createDangerButton(
+            String text
+    ) {
+
+        JButton button =
+                new JButton(
+                        text
+                );
+
+        styleButton(
+                button,
+                DANGER,
+                WHITE
+        );
+
+        return button;
+    }
+
+    private JButton createSecondaryButton(
+            String text
+    ) {
+
+        JButton button =
+                new JButton(
+                        text
+                );
+
+        styleButton(
+                button,
+                LIGHT_BLUE,
+                ROYAL_BLUE
+        );
+
+        button.setBorder(
+                BorderFactory.createLineBorder(
+                        BORDER
+                )
+        );
+
+        return button;
+    }
+
+    // ============================================================
+    // BUTTON STYLE
+    // ============================================================
+
+    private void styleButton(
+            JButton button,
+            Color background,
+            Color foreground
+    ) {
+
+        button.setBackground(
+                background
+        );
+
+        button.setForeground(
+                foreground
+        );
+
+        button.setFont(
+                new Font(
+                        "Segoe UI",
+                        Font.BOLD,
+                        11
+                )
+        );
+
+        button.setFocusPainted(
+                false
+        );
+
+        button.setBorderPainted(
+                true
+        );
+
+        button.setCursor(
+                new Cursor(
+                        Cursor.HAND_CURSOR
+                )
+        );
+
+        button.setPreferredSize(
+                new Dimension(
+                        0,
+                        38
+                )
+        );
+
+        button.addMouseListener(
+                new MouseAdapter() {
+
+                    @Override
+                    public void mouseEntered(
+                            MouseEvent e
+                    ) {
+
+                        button.setBackground(
+                                getHoverColor(
+                                        background
+                                )
+                        );
+                    }
+
+                    @Override
+                    public void mouseExited(
+                            MouseEvent e
+                    ) {
+
+                        button.setBackground(
+                                background
+                        );
+                    }
+                }
+        );
+    }
+
+    // ============================================================
+    // HOVER COLOR
+    // ============================================================
+
+    private Color getHoverColor(
+            Color color
+    ) {
+
+        int r =
+                Math.max(
+                        color.getRed() - 20,
+                        0
+                );
+
+        int g =
+                Math.max(
+                        color.getGreen() - 20,
+                        0
+                );
+
+        int b =
+                Math.max(
+                        color.getBlue() - 20,
+                        0
+                );
+
+        return new Color(
+                r,
+                g,
+                b
+        );
+    }
+
+    // ============================================================
+    // SHOW WARNING
+    // ============================================================
+
+    private void showWarning(
+            String message
+    ) {
+
+        JOptionPane.showMessageDialog(
+                this,
+                message,
+                "Section Management",
+                JOptionPane.WARNING_MESSAGE
+        );
+    }
+
+    // ============================================================
+    // SHOW ERROR
+    // ============================================================
+
+    private void showError(
+            String message
+    ) {
+
+        JOptionPane.showMessageDialog(
+                this,
+                message,
+                "Section Management",
+                JOptionPane.ERROR_MESSAGE
+        );
+    }
+
+    // ============================================================
+    // OPEN FRAME
+    // ============================================================
+
+    private void openFrame(
+            String className
+    ) {
+
+        try {
+
+            Class<?> frameClass =
+                    Class.forName(
+                            className
+                    );
+
+            JFrame frame =
+                    createFrameInstance(
+                            frameClass
+                    );
+
+            if (frame == null) {
+
+                showWarning(
+                        "Unable to open:\n\n"
+                                + className
+                );
+
+                return;
+            }
+
+            frame.setLocationRelativeTo(
+                    this
+            );
+
+            frame.setVisible(
+                    true
+            );
+
+            dispose();
+
+        } catch (ClassNotFoundException ex) {
+
+            showWarning(
+                    "The following frame has not been created yet:\n\n"
+                            + className
+            );
+
+        } catch (Exception ex) {
+
+            showError(
+                    "Unable to open the selected module.\n\n"
+                            + ex.getMessage()
+            );
+
+            ex.printStackTrace();
+        }
+    }
+
+    // ============================================================
+    // CREATE FRAME INSTANCE
+    // ============================================================
+
+    private JFrame createFrameInstance(
+            Class<?> frameClass
+    ) {
+
+        // --------------------------------------------------------
+        // Constructor(int)
+        // --------------------------------------------------------
+
+        try {
+
+            Constructor<?> constructor =
+                    frameClass.getConstructor(
+                            int.class
+                    );
+
+            Object object =
+                    constructor.newInstance(
+                            adminUserId
+                    );
+
+            if (object instanceof JFrame) {
+
+                return (JFrame) object;
+            }
+
+        } catch (NoSuchMethodException ignored) {
+
+        } catch (Exception ex) {
+
+            ex.printStackTrace();
+
+            return null;
+        }
+
+        // --------------------------------------------------------
+        // Constructor(Integer)
+        // --------------------------------------------------------
+
+        try {
+
+            Constructor<?> constructor =
+                    frameClass.getConstructor(
+                            Integer.class
+                    );
+
+            Object object =
+                    constructor.newInstance(
+                            adminUserId
+                    );
+
+            if (object instanceof JFrame) {
+
+                return (JFrame) object;
+            }
+
+        } catch (NoSuchMethodException ignored) {
+
+        } catch (Exception ex) {
+
+            ex.printStackTrace();
+
+            return null;
+        }
+
+        // --------------------------------------------------------
+        // Constructor()
+        // --------------------------------------------------------
+
+        try {
+
+            Constructor<?> constructor =
+                    frameClass.getConstructor();
+
+            Object object =
+                    constructor.newInstance();
+
+            if (object instanceof JFrame) {
+
+                return (JFrame) object;
+            }
+
+        } catch (Exception ex) {
+
+            ex.printStackTrace();
+        }
+
+        return null;
+    }
+
+    // ============================================================
+    // RETURN TO DASHBOARD
+    // ============================================================
+
+    private void returnToDashboard() {
+
+        try {
+
+            JFrame dashboard =
+                    createFrameInstance(
+                            Class.forName(
+                                    "com.lnhs.attendance.frame.admin.AdminDashboard"
+                            )
+                    );
+
+            if (dashboard != null) {
+
+                dashboard.setLocationRelativeTo(
+                        null
+                );
+
+                dashboard.setVisible(
+                        true
+                );
+
+                dispose();
+
+            } else {
+
+                showError(
+                        "Unable to return to Admin Dashboard."
+                );
+            }
+
+        } catch (Exception ex) {
+
+            showError(
+                    "Unable to return to Admin Dashboard.\n\n"
+                            + ex.getMessage()
+            );
+        }
+    }
+
+    // ============================================================
+    // ID / NAME ITEM
+    // ============================================================
+
+    private static class IdNameItem {
+
+        private final int id;
+
+        private final String name;
+
+        public IdNameItem(
+                int id,
+                String name
+        ) {
+
+            this.id = id;
+
+            this.name =
+                    name == null
+                            ? ""
+                            : name;
+        }
+
+        public int getId() {
+
+            return id;
+        }
+
+        public String getName() {
+
+            return name;
+        }
+
+        @Override
+        public String toString() {
+
+            return name;
+        }
+    }
+
+    // ============================================================
+    // MAIN
+    // ============================================================
+
+    public static void main(
+            String[] args
+    ) {
+
+        SwingUtilities.invokeLater(
+                () -> {
+
+                    try {
+
+                        SectionManagement frame =
+                                new SectionManagement(
+                                        0
+                                );
+
+                        frame.setVisible(
+                                true
+                        );
+
+                    } catch (Exception ex) {
+
+                        ex.printStackTrace();
+
+                        JOptionPane.showMessageDialog(
+                                null,
+                                "Unable to start Section Management.\n\n"
+                                        + ex.getMessage(),
+                                "LNHS Attendance System",
+                                JOptionPane.ERROR_MESSAGE
+                        );
+                    }
+                }
+        );
+    }
+}
+
